@@ -16,15 +16,8 @@ class xrowAkamaiConnector implements xrowCDNConnector
     static function clearCacheByNode( eZContentObjectTreeNode $node )
     {
         $ini = eZINI::instance( 'site.ini' );
-        if ( $ini->hasVariable ( 'SiteAccessSettings', 'AvailableSiteAccessList' ) )
-        {
-            foreach( $ini->variable ( 'SiteAccessSettings', 'AvailableSiteAccessList' ) as $siteaccess )
-            {
-                $uri = new eZURI( '/content/view/full/' . $node->NodeID );
-                xrowCDNTools::invalidate( $uri, $siteaccess );
-            }
-        }
-        // call xrowCDNTools::invalidate( eZURI $uri, $siteacccess )
+        $uri = new eZURI( '/content/view/full/' . $node->NodeID );
+        xrowCDNTools::invalidate( $uri );
         return true;
     }
     static function clearCacheByObject( eZContentObject $object )
@@ -45,6 +38,7 @@ class xrowAkamaiConnector implements xrowCDNConnector
             $stash = xrowCDNTools::stash();
             $stashItem = $stash->getItem( $hash );
             $obj = $stashItem->get();
+            //@TODO If HTTP_IF_MODIFIED_SINCE too old deliver response.
             if( $stashItem->isMiss() or !isset( $obj->expire ) )
             {
                 header("HTTP/1.1 304 Not Modified");

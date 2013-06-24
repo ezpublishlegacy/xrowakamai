@@ -5,16 +5,9 @@ class xrowCDNTools
     static private $stash = false;
     static private $debug = null;
     static private $ttl = null;
-    static function hash( eZURI $uri, $siteaccess_name = false )
+    static function hash( eZURI $uri )
     {
-        if ( $siteaccess_name )
-        {
-            return md5( $siteaccess_name . $uri->uriString(true) );
-        }
-        else
-        {
-            return md5( $GLOBALS['eZCurrentAccess']['name'] . $uri->uriString(true) );
-        }
+        return md5( $uri->uriString(true) );
     }
     static function ttl()
     {
@@ -76,9 +69,9 @@ class xrowCDNTools
         }
         return self::$stash;
     }
-    static function invalidate( eZURI $uri, $siteacccess )
+    static function invalidate( eZURI $uri )
     {
-        $hash = xrowCDNTools::hash( $uri, $siteacccess );
+        $hash = xrowCDNTools::hash( $uri );
         $stash = xrowCDNTools::stash();
         $stashItem = $stash->getItem( $hash );
         $stashItem->clear();
