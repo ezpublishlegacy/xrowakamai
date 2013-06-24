@@ -4,11 +4,10 @@ if (empty($argv[2]))
 {
     $argv[2] = "";
 }
-echo "Siteaccess: " . $GLOBALS['eZCurrentAccess']['name'] . "\n";
 $uri = new eZURI( $argv[2], true );
-xrowCDNTools::invalidate( $uri, $GLOBALS['eZCurrentAccess']['name'] );
+xrowCDNTools::invalidate( $uri );
 
-$hash = xrowCDNTools::hash( $uri, $GLOBALS['eZCurrentAccess']['name'] );
+$hash = xrowCDNTools::hash( $uri );
 $stash = xrowCDNTools::stash();
 echo "Hash: " . $hash . "\n";
 $stashItem = $stash->getItem( $hash );
