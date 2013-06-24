@@ -1,0 +1,3 @@
+[submodule "src/stash"]
+	path = src/stash
+	url = https://github.com/tedivm/Stash.git

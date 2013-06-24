@@ -28,7 +28,7 @@ class xrowAkamaiConnector implements xrowCDNConnector
         {
             $time = strtotime( $_SERVER['HTTP_IF_MODIFIED_SINCE'] );
             $hash = xrowCDNTools::hash( self::$uri );
-            $result = $memcache->get( $hash );
+            $result = xrowCDNTools::memcache()->get( $hash );
             if ( !$result )
             {
                 header("HTTP/1.1 304 Not Modified");
