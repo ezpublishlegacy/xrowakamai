@@ -3,9 +3,48 @@
 class xrowCDNTools
 {
     static private $stash = false;
-    static function hash( eZURI $uri )
+    static private $debug = null;
+    static private $ttl = null;
+    static function hash( eZURI $uri, $siteaccess_name = false )
     {
-        return md5( $GLOBALS['eZCurrentAccess']['name'] . $uri->uriString(true) );
+        if ( $siteaccess_name )
+        {
+            return md5( $siteaccess_name . $uri->uriString(true) );
+        }
+        else
+        {
+            return md5( $GLOBALS['eZCurrentAccess']['name'] . $uri->uriString(true) );
+        }
+    }
+    static function ttl()
+    {
+        if ( self::$ttl === null )
+        {
+            // Using memcached options
+            $options = array();
+            $ini = eZINI::instance( 'xrowcdn.ini' );
+            if ( $ini->hasVariable ( 'Settings', 'TTL' ) )
+            {
+                self::$ttl = (int)$ini->variable ( 'Settings', 'TTL' );
+            }
+            self::$ttl = 4*3600;
+        }
+        return self::$ttl;
+    }
+    static function debug()
+    {
+        if ( self::$debug === null )
+        {
+            // Using memcached options
+            $options = array();
+            $ini = eZINI::instance( 'xrowcdn.ini' );
+            if ( $ini->hasVariable ( 'Settings', 'Debug' ) and $ini->variable ( 'Settings', 'Debug' ) == 'enbaled' )
+            {
+                self::$debug = true;
+            }
+            self::$debug = false;
+        }
+        return self::$debug;
     }
     /*
      *  @return Stash
@@ -16,8 +55,14 @@ class xrowCDNTools
         {
             // Using memcached options
             $options = array();
-            $options['servers'][] = array('192.168.0.1', '11211');
-            $options['servers'][] = array('192.168.0.1', '11211');
+            $ini = eZINI::instance( 'xrowcdn.ini' );
+            if ( $ini->hasVariable ( 'Settings', 'MemcacheServer' ) )
+            {
+                foreach ( $ini->variable( 'Settings', 'MemcacheServer' ) as $server )
+                {
+                    $options['servers'][] = array( $server, '11211');
+                }
+            }
             
             $options['prefix_key'] = 'ezpublish';
             $options['libketama_compatible'] = true;
@@ -30,5 +75,15 @@ class xrowCDNTools
             self::$stash = $stash;
         }
         return self::$stash;
+    }
+    static function invalidate( eZURI $uri, $siteacccess )
+    {
+        $hash = xrowCDNTools::hash( $uri, $siteacccess );
+        $stash = xrowCDNTools::stash();
+        $stashItem = $stash->getItem( $hash );
+        $stashItem->clear();
+        $obj = new xrowCacheItem();
+        $obj->expire = time();
+        $stashItem->set($obj, 4*3600);
     }
 }

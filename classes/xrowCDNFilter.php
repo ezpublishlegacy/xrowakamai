@@ -27,11 +27,12 @@ class xrowCDNFilter
 	static function filter($output) {
 # speed up string matching by removing whitespace
 #	    $output = preg_replace('~>\s+<~', '><', $output);
-		if (eZSys::isSSLNow ()) {
+	    $ini = eZINI::instance ( 'xrowcdn.ini' );
+		if ( eZSys::isSSLNow () and $ini->hasVariable ( 'Settings', 'SSL' ) ) {
 			return $output;
 		}
 		eZDebug::createAccumulatorGroup ( 'outputfilter_total', 'Outputfilter Total' );
-		$ini = eZINI::instance ( 'xrowcdn.ini' );
+		
 		$patterns = array ();
 		$replacements = array ();
 		if ($ini->hasVariable ( 'Rules', 'List' )) {

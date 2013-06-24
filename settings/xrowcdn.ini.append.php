@@ -1,6 +1,15 @@
 <?php /*
 
 [Settings]
+#TTL=14400
+#Debug=enabled
+#SSL=disabled
+#Filter=xrowCDNFilter::filter
+#MemcacheServer[]=192.168.0.1
+#MemcacheServer[]=192.168.0.1
+#MemcacheServer[]=thor.madsack.de
+#MemcacheServer[]=odin.madsack.de
+#MemcacheServer[]=loki.madsack.de
 
 Directories[]
 Directories[]=var
@@ -12,7 +21,7 @@ Directories[]=share/icons
 List[]
 List[]=distribution
 List[]=database
-List[]=js
+#List[]=js
 
 [Rule-distribution]
 Dirs[]
@@ -29,7 +38,7 @@ Suffixes[]=jpeg
 Suffixes[]=png
 Suffixes[]=ico
 Suffixes[]=css
-Replacement=http://www.example.com
+Replacement=//www.example.com
 
 [Rule-js]
 Distribution=true
@@ -41,6 +50,6 @@ Dirs[]=\/var\/[a-z0-9_-]+\/cache\/public
 Dirs[]=\/var\/storage\/packages
 Suffixes[]
 Suffixes[]=js
-Replacement=http://www.example.com
+Replacement=//www.example.com
 
 */ ?>
