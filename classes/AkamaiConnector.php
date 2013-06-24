@@ -28,10 +28,14 @@ class xrowAkamaiConnector implements xrowCDNConnector
         {
             $time = strtotime( $_SERVER['HTTP_IF_MODIFIED_SINCE'] );
             $hash = xrowCDNTools::hash( self::$uri );
-            $result = xrowCDNTools::memcache()->get( $hash );
-            if ( !$result )
+            $stash = xrowCDNTools::stash();
+            $stashItem = $stash->getItem( $hash );
+
+            $data = $stashItem->get();
+            if( $stashItem->isMiss() )
             {
                 header("HTTP/1.1 304 Not Modified");
+                header("X-XROW-Cache: 304");
                 eZExecution::cleanExit();
             }
         }
@@ -39,13 +43,30 @@ class xrowAkamaiConnector implements xrowCDNConnector
     }
     static function storeResult( $html )
     {
+        if ( $GLOBALS['eZRequestedModuleParams']['module_name'] == 'content' and $GLOBALS['eZRequestedModuleParams']['function_name'] == 'view' )
+        {
+            
+            $node = eZContentObjectTreeNode::fetch( $GLOBALS['eZRequestedModuleParams']['parameters']['NodeID'] );
+
+            if ( $node instanceof eZContentObjectTreeNode)
+            {
+                $GLOBALS['CONTENT_LAST_MODIFIED'] = $node->attribute( 'modified_subnode' ) + 4 * 3600;
+            }
+            
+        }
+       
+        if ( isset( $GLOBALS['CONTENT_LAST_MODIFIED'] ) )
+        {
+            header('Last-Modified: '.gmdate('D, d M Y H:i:s', $GLOBALS['CONTENT_LAST_MODIFIED']).' GMT');
+        }
         if ( self::$uri instanceof eZURI )
         {
             $hash = xrowCDNTools::hash( self::$uri );
-            $memcache = xrowCDNTools::$memcache();
-            $memcache->set( $hash . "_html", $html, true, 4*3600);
-            $get_result = $memcache->get('key');
+            $stash = xrowCDNTools::stash();
+            $stashItem = $stash->getItem( $hash . "_html" );
+            // Cache expires in four hours.
+            $stashItem->set($html, 4*3600);
         }
-        return true;
+        return $html;
     }
 }
