@@ -1,15 +1,14 @@
-<?php /*
+<?php /* #?ini charset="utf-8"?
 
 [Settings]
 #TTL=14400
 #Debug=enabled
 #SSL=disabled
 #Filter=xrowCDNFilter::filter
-#MemcacheServer[]=192.168.0.1
-#MemcacheServer[]=192.168.0.1
-#MemcacheServer[]=thor.madsack.de
-#MemcacheServer[]=odin.madsack.de
-#MemcacheServer[]=loki.madsack.de
+
+#Modules[content/view]=3600
+#Modules[content/*]=3600
+#Modules[content/view]=XROW\CDN\ContentViewTest
 
 Directories[]
 Directories[]=var
@@ -21,6 +20,7 @@ Directories[]=share/icons
 List[]
 List[]=distribution
 List[]=database
+#Js needs to be local for security reasons till http://en.wikipedia.org/wiki/Cross-origin_resource_sharing works
 #List[]=js
 
 [Rule-distribution]

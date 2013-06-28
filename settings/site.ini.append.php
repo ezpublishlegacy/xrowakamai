@@ -1,7 +1,7 @@
+<?php /* #?ini charset="utf-8"?
+
 [Event]
-Listeners[]=request/input@xrowAkamaiConnector::generateResponse
-Listeners[]=response/output@xrowAkamaiConnector::storeResult
+Listeners[]=module/start@XROW\CDN\xrowAkamaiConnector::checkNotModified
+Listeners[]=response/output@XROW\CDN\xrowAkamaiConnector::deliver
 
-
-#Use the filter capability only.
-#Listeners[]=request/input@xrowCDNFilter::filter
+*/ ?>

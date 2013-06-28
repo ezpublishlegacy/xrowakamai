@@ -1,29 +1,40 @@
 <?php
 
+namespace XROW\CDN;
+
+use \eZContentObjectTreeNode as eZContentObjectTreeNode;
+use \eZContentObject as eZContentObject;
+
 interface xrowCDNConnector
 {
-    /*
-     * Writes a new global timestamp into Memcache
-    *
-    */
+    /**
+     * Clears all caches.
+     *
+     */
     static function clearAll();
-    /*
-     * Writes multiple urls and timestamps if the objects modified time into memcache
-    *
-    */
+    /**
+     * Updates ezcontentobject_tree.modified_subnode
+     *
+     * Beware the function eZContentObjectTreeNode::updateAndStoreModified() is also called during publishing.
+     *
+     * @param eZContentObjectTreeNode $node
+     */
     static function clearCacheByNode( eZContentObjectTreeNode $node );
-    /*
-     * @see clearCacheByNode
-    */
+    /**
+     * Updates ezcontentobject_tree.modified_subnode for all nodes of the object
+     *
+     * Beware the function eZContentObjectTreeNode::updateAndStoreModified() is also called during publishing.
+     * @see xrowCDNConnector::clearCacheByNode()
+     * @param eZContentObject $object
+     */
     static function clearCacheByObject( eZContentObject $object );
-    /*
+    /**
      * Might generate a 304 Response and abort the execution
-    *
-    * The funtion can hook into ezpEvent::getInstance()->notify( 'request/input', array( $uri ) );
-    */
-    static function generateResponse( eZUri $uri );
-    /*
-     * ezpEvent::getInstance()->filter( 'response/output', $fullPage );
-    */
-    static function storeResult( $html );
+     * Listener function for Event "module/start" defined in [Event].Listener in site.ini 
+     */
+    static function checkNotModified( $moduleName, $functionName, $params );
+    /**
+     * Listener function for Event "response/output" defined in [Event].Listener in site.ini
+     */
+    static function deliver( $html );
 }

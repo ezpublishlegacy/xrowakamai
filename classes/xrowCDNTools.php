@@ -1,14 +1,14 @@
 <?php
 
+namespace XROW\CDN;
+
+use \eZINI as eZINI;
+
 class xrowCDNTools
 {
-    static private $stash = false;
     static private $debug = null;
     static private $ttl = null;
-    static function hash( eZURI $uri )
-    {
-        return md5( $uri->uriString(true) );
-    }
+
     static function ttl()
     {
         if ( self::$ttl === null )
@@ -28,8 +28,6 @@ class xrowCDNTools
     {
         if ( self::$debug === null )
         {
-            // Using memcached options
-            $options = array();
             $ini = eZINI::instance( 'xrowcdn.ini' );
             if ( $ini->hasVariable ( 'Settings', 'Debug' ) and $ini->variable ( 'Settings', 'Debug' ) == 'enbaled' )
             {
@@ -42,6 +40,13 @@ class xrowCDNTools
     /*
      *  @return Stash
      */
+    
+    /* OLDCODE
+    static private $stash = false;
+    static function hash( eZURI $uri )
+    {
+        return md5( $uri->uriString(true) );
+    }
     static function stash()
     {
         if ( ! self::$stash )
@@ -79,4 +84,5 @@ class xrowCDNTools
         $obj->expire = time();
         $stashItem->set($obj, 4*3600);
     }
+    */
 }

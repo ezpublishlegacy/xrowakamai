@@ -5,93 +5,168 @@
 *
 * @package xrow\CDN
 */
+
+namespace XROW\CDN;
+
+
+use \eZINI as eZINI;
+use \eZExecution as eZExecution;
+use \eZLog as eZLog;
+use \Exception as Exception;
+
 class xrowAkamaiConnector implements xrowCDNConnector
 {
-    private static $uri = false;
-
+    /**
+     * @see xrowCDNConnector::clearAll()
+     */
     static function clearAll()
     {
         return true;
     }
+    /**
+     * @see xrowCDNConnector::clearCacheByNode()
+     */
     static function clearCacheByNode( eZContentObjectTreeNode $node )
     {
-        $ini = eZINI::instance( 'site.ini' );
-        $uri = new eZURI( '/content/view/full/' . $node->NodeID );
-        xrowCDNTools::invalidate( $uri );
+        $node->updateAndStoreModified();
         return true;
     }
+
+    /**
+     * @see xrowCDNConnector::checkNotModified()
+     */
     static function clearCacheByObject( eZContentObject $object )
     {
         foreach ( $object->assignedNodes() as $node )
         {
-        	self::clearCacheByNode($node);
+            self::clearCacheByNode( $node );
         }
         return true;
     }
-    static function generateResponse( eZUri $uri )
+    /**
+     * @see xrowCDNConnector::checkNotModified()
+     */
+    static function checkNotModified( $moduleName, $functionName, $params )
     {
-        self::$uri = $uri;
-        if (array_key_exists( 'HTTP_IF_MODIFIED_SINCE', $_SERVER) and $_SERVER['REQUEST_METHOD'] == 'GET' )
+        if ( array_key_exists( 'HTTP_IF_MODIFIED_SINCE', $_SERVER ) and ( $_SERVER['REQUEST_METHOD'] == 'GET' or $_SERVER['REQUEST_METHOD'] == 'HEAD' ) )
         {
             $time = strtotime( $_SERVER['HTTP_IF_MODIFIED_SINCE'] );
-            $hash = xrowCDNTools::hash( self::$uri );
-            $stash = xrowCDNTools::stash();
-            $stashItem = $stash->getItem( $hash );
-            $obj = $stashItem->get();
-            //@TODO If HTTP_IF_MODIFIED_SINCE too old deliver response.
-            if( $stashItem->isMiss() or !isset( $obj->expire ) )
+            if ( $time > time() or ! $time )
             {
-                header("HTTP/1.1 304 Not Modified");
+                return true;
+            }
+            $ini = eZINI::instance( "xrowcdn.ini" );
+            if ( $ini->hasVariable( 'Settings', 'Modules' ) )
+            {
+                $list = $ini->variable( 'Settings', 'Modules' );
+                if ( isset( $list[$moduleName . '/' . $functionName] ) )
+                {
+                    $rule = $list[$moduleName . '/' . $functionName];
+                }
+                elseif ( isset( $list[$moduleName . '/*'] ) )
+                {
+                    $rule = $list[$moduleName . '/*'];
+                }
+            }
+            $test =class_implements( $rule );
+            if ( isset( $rule ) && is_numeric( $rule ) )
+            {
+                $expire = $time + $rule;
+                if ( $expire < time() )
+                {
+                    $result = true;
+                }
+                else
+                {
+                    $result = false;
+                }
+            }
+            elseif ( isset( $rule ) && in_array( 'XROW\CDN\ContentModifiedEvaluator', class_implements( $rule ) ) )
+            {
+                $result = call_user_func( $rule . "::isNotModified", $moduleName, $functionName, $params, $time );
+            }
+            elseif ( isset( $rule ) && !in_array( 'XROW\CDN\ContentModifiedEvaluator', class_implements( $rule ) ) )
+            {
+                throw new Exception( "Class '$rule' does`t implement XROW\CDN\ContentModifiedEvaluator." );
+            }
+            if ( !empty( $result ) )
+            {
+                header( "HTTP/1.1 304 Not Modified" );
+                if( xrowCDNTools::debug() )
+                {
+                    eZLog::write( "304 " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], "xrowcdn_304.log");
+                }
                 eZExecution::cleanExit();
             }
         }
         return true;
     }
-    static function storeResult( $html )
+    /**
+     * @see xrowCDNConnector::deliver()
+     */
+    static function deliver( $html )
     {
-        $ini = eZINI::instance ( 'xrowcdn.ini' );
-        if ( $ini->hasVariable ( 'Settings', 'Filter' ) and function_exists( $ini->variable ( 'Settings', 'Filter' ) ) ) {
-            $html = call_user_func ( $ini->variable ( 'Settings', 'Filter' ), $html );
+        $ini = eZINI::instance( 'xrowcdn.ini' );
+        if ( $ini->hasVariable( 'Settings', 'Filter' ) and function_exists( $ini->variable( 'Settings', 'Filter' ) ) )
+        {
+            $html = call_user_func( $ini->variable( 'Settings', 'Filter' ), $html );
         }
+        if ( $_SERVER['REQUEST_METHOD'] != 'GET' and $_SERVER['REQUEST_METHOD'] != 'HEAD' )
+        {
+             return $html;
+        }
+        $moduleName = $GLOBALS['eZRequestedModuleParams']['module_name'];
+        $functionName = $GLOBALS['eZRequestedModuleParams']['function_name'];
+        $params = $GLOBALS['eZRequestedModuleParams']['parameters'];
         
-        if ( $GLOBALS['eZRequestedModuleParams']['module_name'] == 'content' and $GLOBALS['eZRequestedModuleParams']['function_name'] == 'view' )
+        $ini = eZINI::instance( "xrowcdn.ini" );
+        if ( $ini->hasVariable( 'Settings', 'Modules' ) )
         {
-            $node = eZContentObjectTreeNode::fetch( $GLOBALS['eZRequestedModuleParams']['parameters']['NodeID'] );
-            if ( $node instanceof eZContentObjectTreeNode )
+            $list = $ini->variable( 'Settings', 'Modules' );
+            if ( isset( $list[$moduleName . '/' . $functionName] ) )
             {
-                $GLOBALS['CONTENT_LAST_MODIFIED'] = $node->attribute( 'modified_subnode' ) + 4 * 3600;
+                $rule = $list[$moduleName . '/' . $functionName];
+            }
+            elseif ( isset( $list[$moduleName . '/*'] ) )
+            {
+                $rule = $list[$moduleName . '/*'];
             }
         }
-       
-        if ( isset( $GLOBALS['CONTENT_LAST_MODIFIED'] ) )
+        if ( isset( $rule ) && is_numeric( $rule ) )
         {
-            header('Last-Modified: '.gmdate('D, d M Y H:i:s', $GLOBALS['CONTENT_LAST_MODIFIED']).' GMT');
-            header('Cache-Control: public, must-revalidate, max-age=' . xrowCDNTools::ttl() );
-            header('Age: 0' );
-            header('Pragma: ' );
+            header_remove("Expires");
+            header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', time() ) . ' GMT' );
+            header( 'Cache-Control: public, must-revalidate, max-age=' . $rule );
+            header( 'Age: 0' );
+            header( 'Pragma: ' );
+            if( xrowCDNTools::debug() )
+            {
+                eZLog::write( "now/$rule " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], "xrowcdn_200.log");
+            }
         }
-        if ( self::$uri instanceof eZURI )
+        elseif ( isset( $rule ) && in_array( 'XROW\CDN\ContentModifiedEvaluator', class_implements( $rule ) ) )
         {
-            $hash = xrowCDNTools::hash( self::$uri );
-            $stash = xrowCDNTools::stash();
-            $stashItem = $stash->getItem( $hash );
-            $obj = $stashItem->get();
-            if ( !isset( $obj ) )
+            $last_modified = call_user_func( $rule . "::getLastModified", $moduleName, $functionName, $params  );
+            if ( $last_modified )
             {
-                $obj = new xrowCacheItem();
+                header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', $last_modified ) . ' GMT' );
             }
-            if ( isset( $GLOBALS['CONTENT_LAST_MODIFIED'] ) )
+            $ttl = call_user_func( $rule . "::ttl", $moduleName, $functionName, $params );
+            if ( $ttl )
             {
-                $obj->last_modified = $GLOBALS['CONTENT_LAST_MODIFIED'];
+                header_remove("Expires");
+                header( 'Cache-Control: public, must-revalidate, max-age=' . $ttl );
+                header( 'Age: 0' );
+                header( 'Pragma: ' );
             }
-            $obj->response = $html;
-            // Cache expires in four hours.
-            $stashItem->set($obj, xrowCDNTools::ttl()  );
-            if ( xrowCDNTools::debug() )
+            if( xrowCDNTools::debug() )
             {
-                header("X-Cache-Key: " . $hash );
-                header("X-Cache-Uri: " . self::$uri->uriString(true) );
+                eZLog::write( "$last_modified/$ttl " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], "xrowcdn_200.log");
             }
+        }
+        elseif ( isset( $rule ) && !in_array( 'XROW\CDN\ContentModifiedEvaluator', class_implements( $rule ) ) )
+        {
+        	throw new Exception( "Class '$rule' does`t implement XROW\CDN\ContentModifiedEvaluator." );
         }
         return $html;
     }

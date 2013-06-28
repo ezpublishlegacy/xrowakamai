@@ -1,0 +1,19 @@
+index 81758cf..ed2a02a 100644
+--- a/kernel/private/classes/ezpkernelweb.php
++++ b/kernel/private/classes/ezpkernelweb.php
+@@ -305,7 +305,7 @@ class ezpKernelWeb implements ezpKernelHandler
+         foreach (
+             eZHTTPHeader::headerOverrideArray( $this->uri ) +
+             array(
+-                'Expires' => 'Mon, 26 Jul 1997 05:00:00 GMT',
++                // 'Expires' => 'Mon, 26 Jul 1997 05:00:00 GMT',
+                 'Last-Modified' => gmdate( 'D, d M Y H:i:s' ) . ' GMT',
+                 'Cache-Control' => 'no-cache, must-revalidate',
+                 'Pragma' => 'no-cache',
+@@ -651,6 +651,7 @@ class ezpKernelWeb implements ezpKernelHandler
+ 
+             if ( !$displayMissingModule && $moduleCheck['result'] && $this->module instanceof eZModule )
+             {
++                ezpEvent::getInstance()->notify( 'module/start', array( $moduleName, $functionName, $params ) );
+                 // Run the module/function
+                 eZDebug::addTimingPoint( "Module start '" . $this->module->attribute( 'name' ) . "'" );
