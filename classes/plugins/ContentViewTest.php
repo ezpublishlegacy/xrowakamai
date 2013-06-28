@@ -48,6 +48,6 @@ class ContentViewTest implements ContentModifiedEvaluator
 
     static function ttl( $moduleName, $functionName, $params )
     {
-        return xrowCDNTools::ttl();
+        return CDNTools::ttl();
     }
 }

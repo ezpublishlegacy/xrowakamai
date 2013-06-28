@@ -14,7 +14,7 @@ use \eZExecution as eZExecution;
 use \eZLog as eZLog;
 use \Exception as Exception;
 
-class xrowAkamaiConnector implements xrowCDNConnector
+class AkamaiConnector implements CDNConnector
 {
     /**
      * @see xrowCDNConnector::clearAll()
@@ -92,7 +92,7 @@ class xrowAkamaiConnector implements xrowCDNConnector
             if ( !empty( $result ) )
             {
                 header( "HTTP/1.1 304 Not Modified" );
-                if( xrowCDNTools::debug() )
+                if( CDNTools::debug() )
                 {
                     eZLog::write( "304 " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], "xrowcdn_304.log");
                 }
@@ -139,7 +139,7 @@ class xrowAkamaiConnector implements xrowCDNConnector
             header( 'Cache-Control: public, must-revalidate, max-age=' . $rule );
             header( 'Age: 0' );
             header( 'Pragma: ' );
-            if( xrowCDNTools::debug() )
+            if( CDNTools::debug() )
             {
                 eZLog::write( "now/$rule " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], "xrowcdn_200.log");
             }
@@ -159,7 +159,7 @@ class xrowAkamaiConnector implements xrowCDNConnector
                 header( 'Age: 0' );
                 header( 'Pragma: ' );
             }
-            if( xrowCDNTools::debug() )
+            if( CDNTools::debug() )
             {
                 eZLog::write( "$last_modified/$ttl " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], "xrowcdn_200.log");
             }

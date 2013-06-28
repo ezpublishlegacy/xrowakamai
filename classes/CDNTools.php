@@ -4,7 +4,7 @@ namespace XROW\CDN;
 
 use \eZINI as eZINI;
 
-class xrowCDNTools
+class CDNTools
 {
     static private $debug = null;
     static private $ttl = null;
@@ -76,8 +76,8 @@ class xrowCDNTools
     }
     static function invalidate( eZURI $uri )
     {
-        $hash = xrowCDNTools::hash( $uri );
-        $stash = xrowCDNTools::stash();
+        $hash = CDNTools::hash( $uri );
+        $stash = CDNTools::stash();
         $stashItem = $stash->getItem( $hash );
         $stashItem->clear();
         $obj = new xrowCacheItem();

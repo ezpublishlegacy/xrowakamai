@@ -5,7 +5,7 @@ namespace XROW\CDN;
 use \eZContentObjectTreeNode as eZContentObjectTreeNode;
 use \eZContentObject as eZContentObject;
 
-interface xrowCDNConnector
+interface CDNConnector
 {
     /**
      * Clears all caches.

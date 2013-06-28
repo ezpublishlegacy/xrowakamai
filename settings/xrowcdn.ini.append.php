@@ -4,7 +4,7 @@
 #TTL=14400
 #Debug=enabled
 #SSL=disabled
-#Filter=xrowCDNFilter::filter
+#Filter=CDNFilter::filter
 
 #Modules[content/view]=3600
 #Modules[content/*]=3600

@@ -5,7 +5,7 @@ namespace XROW\CDN;
  * Instead of an output filter it would be smart to have a nice template operator later on that directly converts the urls
  * 
  */
-class xrowCDNFilter
+class CDNFilter
 {
 	const DIR_NAME = '[.a-z0-9_-]+';
 	const PATH_EXP = '(\/[.a-z0-9_-]+)*';
