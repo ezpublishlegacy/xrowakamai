@@ -1,0 +1,29 @@
+diff --git "a/C:\\Users\\kristina\\AppData\\Local\\Temp\\TortoiseGit\\indFE15.tmp\\index-e73cf66-left.php" "b/C:\\workspace\\madsack_dev\\extension\\xrowakamai\\index.php"
+index 73197ee..dfbcba7 100644
+--- "a/C:\\Users\\kristina\\AppData\\Local\\Temp\\TortoiseGit\\indFE15.tmp\\index-e73cf66-left.php"
++++ "b/C:\\workspace\\madsack_dev\\extension\\xrowakamai\\index.php"
+@@ -452,8 +452,7 @@ if ( $phpLocale != '' )
+ }
+ 
+ // send header information
+-$headerList = array( 'Expires' => 'Mon, 26 Jul 1997 05:00:00 GMT',
+-                     'Last-Modified' => gmdate( 'D, d M Y H:i:s' ) . ' GMT',
++$headerList = array( 'Last-Modified' => gmdate( 'D, d M Y H:i:s' ) . ' GMT',
+                      'Cache-Control' => 'no-cache, must-revalidate',
+                      'Pragma' => 'no-cache',
+                      'X-Powered-By' => 'eZ Publish',
+@@ -581,6 +580,7 @@ while ( $moduleRunRequired )
+          $moduleCheck['result'] &&
+          $module instanceof eZModule )
+     {
++        ezpEvent::getInstance()->notify( 'module/start', array( $module->attribute( 'name' ), $function_name, $params ) );
+         // Run the module/function
+         eZDebug::addTimingPoint( "Module start '" . $module->attribute( 'name' ) . "'" );
+ 
+@@ -1111,4 +1111,4 @@ eZDisplayResult( $templateResult );
+ eZExecution::cleanup();
+ eZExecution::setCleanExit();
+ 
+-?>
++?>
+\ No newline at end of file
