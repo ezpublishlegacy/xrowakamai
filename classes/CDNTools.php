@@ -1,9 +1,9 @@
 <?php
 
-namespace XROW\CDN;
+/*namespace XROW\CDN;
 
 use \eZINI as eZINI;
-
+*/
 class CDNTools
 {
     static private $debug = null;

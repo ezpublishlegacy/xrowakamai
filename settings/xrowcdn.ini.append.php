@@ -8,6 +8,9 @@
 
 #Modules[content/view]=3600
 #Modules[content/*]=3600
+# eZ 4x
+#Modules[content/view]=ContentViewTest
+# eZ 5x
 #Modules[content/view]=XROW\CDN\ContentViewTest
 
 Directories[]

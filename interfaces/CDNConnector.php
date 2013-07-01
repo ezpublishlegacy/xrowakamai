@@ -1,10 +1,10 @@
 <?php
 
-namespace XROW\CDN;
+/*namespace XROW\CDN;
 
 use \eZContentObjectTreeNode as eZContentObjectTreeNode;
 use \eZContentObject as eZContentObject;
-
+*/
 interface CDNConnector
 {
     /**

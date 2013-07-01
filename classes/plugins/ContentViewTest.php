@@ -4,12 +4,12 @@
 *
 * @package xrow\CDN
 */
-
+/*
 namespace XROW\CDN;
 
 use \eZPersistentObject as eZPersistentObject;
 use \eZContentObjectTreeNode as eZContentObjectTreeNode;
-
+*/
 class ContentViewTest implements ContentModifiedEvaluator
 {
 

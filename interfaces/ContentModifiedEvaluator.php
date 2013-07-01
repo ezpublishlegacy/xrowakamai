@@ -1,6 +1,6 @@
 <?php
 
-namespace XROW\CDN;
+/*namespace XROW\CDN;*/
 
 interface ContentModifiedEvaluator
 {

@@ -5,7 +5,7 @@
 *
 * @package xrow\CDN
 */
-
+/*
 namespace XROW\CDN;
 
 
@@ -13,7 +13,7 @@ use \eZINI as eZINI;
 use \eZExecution as eZExecution;
 use \eZLog as eZLog;
 use \Exception as Exception;
-
+*/
 class AkamaiConnector implements CDNConnector
 {
     /**
@@ -81,13 +81,16 @@ class AkamaiConnector implements CDNConnector
                     $result = false;
                 }
             }
-            elseif ( isset( $rule ) && in_array( 'XROW\CDN\ContentModifiedEvaluator', class_implements( $rule ) ) )
+            /*elseif ( isset( $rule ) && in_array( 'XROW\CDN\ContentModifiedEvaluator', class_implements( $rule ) ) )*/
+            elseif ( isset( $rule ) && in_array( 'ContentModifiedEvaluator', class_implements( $rule ) ) )
             {
                 $result = call_user_func( $rule . "::isNotModified", $moduleName, $functionName, $params, $time );
             }
-            elseif ( isset( $rule ) && !in_array( 'XROW\CDN\ContentModifiedEvaluator', class_implements( $rule ) ) )
+            /*elseif ( isset( $rule ) && !in_array( 'XROW\CDN\ContentModifiedEvaluator', class_implements( $rule ) ) )*/
+            elseif ( isset( $rule ) && !in_array( 'ContentModifiedEvaluator', class_implements( $rule ) ) )
             {
-                throw new Exception( "Class '$rule' does`t implement XROW\CDN\ContentModifiedEvaluator." );
+                /*throw new Exception( "Class '$rule' does`t implement XROW\CDN\ContentModifiedEvaluator." );*/
+                throw new Exception( "Class '$rule' does`t implement ContentModifiedEvaluator." );
             }
             if ( !empty( $result ) )
             {
@@ -144,7 +147,8 @@ class AkamaiConnector implements CDNConnector
                 eZLog::write( "now/$rule " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], "xrowcdn_200.log");
             }
         }
-        elseif ( isset( $rule ) && in_array( 'XROW\CDN\ContentModifiedEvaluator', class_implements( $rule ) ) )
+        /*elseif ( isset( $rule ) && in_array( 'XROW\CDN\ContentModifiedEvaluator', class_implements( $rule ) ) )*/
+        elseif ( isset( $rule ) && in_array( 'ContentModifiedEvaluator', class_implements( $rule ) ) )
         {
             $last_modified = call_user_func( $rule . "::getLastModified", $moduleName, $functionName, $params  );
             if ( $last_modified )
@@ -164,9 +168,11 @@ class AkamaiConnector implements CDNConnector
                 eZLog::write( "$last_modified/$ttl " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], "xrowcdn_200.log");
             }
         }
-        elseif ( isset( $rule ) && !in_array( 'XROW\CDN\ContentModifiedEvaluator', class_implements( $rule ) ) )
+        /*elseif ( isset( $rule ) && !in_array( 'XROW\CDN\ContentModifiedEvaluator', class_implements( $rule ) ) )*/
+        elseif ( isset( $rule ) && !in_array( 'ContentModifiedEvaluator', class_implements( $rule ) ) )
         {
-        	throw new Exception( "Class '$rule' does`t implement XROW\CDN\ContentModifiedEvaluator." );
+            /*throw new Exception( "Class '$rule' does`t implement XROW\CDN\ContentModifiedEvaluator." );*/
+            throw new Exception( "Class '$rule' does`t implement ContentModifiedEvaluator." );
         }
         return $html;
     }
