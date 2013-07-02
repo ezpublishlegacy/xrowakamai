@@ -140,6 +140,7 @@ class AkamaiConnector implements CDNConnector
             header_remove("Expires");
             header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', time() ) . ' GMT' );
             header( 'Cache-Control: public, must-revalidate, max-age=' . $rule );
+            header( 'Edge-control: !log-cookie,max-age=60' );
             header( 'Age: 0' );
             header( 'Pragma: ' );
             if( CDNTools::debug() )
@@ -160,6 +161,7 @@ class AkamaiConnector implements CDNConnector
             {
                 header_remove("Expires");
                 header( 'Cache-Control: public, must-revalidate, max-age=' . $ttl );
+                header( 'Edge-control: !log-cookie,max-age=60' );
                 header( 'Age: 0' );
                 header( 'Pragma: ' );
             }
