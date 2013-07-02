@@ -138,7 +138,12 @@ class AkamaiConnector implements CDNConnector
         if ( isset( $rule ) && is_numeric( $rule ) )
         {
             header_remove("Expires");
+            header_remove("X-Powered-By");
             header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', time() ) . ' GMT' );
+            /**
+             * max-age,no-store,no-cache,pre-check (serves as a max-age setting if there is no max-age)
+• post-check (serves as an Akamai Prefresh setting)
+             */
             header( 'Cache-Control: public, must-revalidate, max-age=' . $rule );
             header( 'Edge-control: !log-cookie,max-age=60' );
             header( 'Age: 0' );
@@ -160,6 +165,7 @@ class AkamaiConnector implements CDNConnector
             if ( $ttl )
             {
                 header_remove("Expires");
+                header_remove("X-Powered-By");
                 header( 'Cache-Control: public, must-revalidate, max-age=' . $ttl );
                 header( 'Edge-control: !log-cookie,max-age=60' );
                 header( 'Age: 0' );
