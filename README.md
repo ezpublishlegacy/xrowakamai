@@ -32,3 +32,9 @@ Modules[content/view]=ContentViewTest
 Create a new Plugin
 
 See ContentViewTest.php as an example. Beware and use as less SQL queries as possible.
+
+Debug Akamai Headers
+
+curl -v -s -o/dev/null -H "Pragma: akamai-x-cache-on, akamai-x-cache-remote-on, akamai-x-check-cacheable, akamai-x-get-cache-key, akamai-x-get-extracted-values, akamai-x-get-nonces, akamai-x-get-ssl-client-session-id, akamai-x-get-true-cache-key, akamai-x-serial-no" http://dev.example.com/
+
+curl -v -s -o/dev/null -H "Host: dev.example.com" http://193.0.0.0/
