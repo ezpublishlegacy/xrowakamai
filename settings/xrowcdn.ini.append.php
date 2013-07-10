@@ -5,7 +5,8 @@
 #Debug=enabled
 #SSL=disabled
 #Filter=CDNFilter::filter
-
+#Hostnames that should no use the CDN
+#ExcludeHostList[]=test.example.com
 #Modules[content/view]=3600
 #Modules[content/*]=3600
 # eZ 4x
