@@ -20,7 +20,10 @@ class CDNTools
             {
                 self::$ttl = (int)$ini->variable ( 'Settings', 'TTL' );
             }
-            self::$ttl = 4*3600;
+            else
+            {
+                self::$ttl = 4*3600;
+            }
         }
         return self::$ttl;
     }
