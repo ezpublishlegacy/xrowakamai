@@ -120,8 +120,7 @@ class AkamaiConnector implements CDNConnector
         $moduleName = $GLOBALS['eZRequestedModuleParams']['module_name'];
         $functionName = $GLOBALS['eZRequestedModuleParams']['function_name'];
         $params = $GLOBALS['eZRequestedModuleParams']['parameters'];
-        
-        $ini = eZINI::instance( "xrowcdn.ini" );
+
         if ( $ini->hasVariable( 'Settings', 'Modules' ) )
         {
             $list = $ini->variable( 'Settings', 'Modules' );

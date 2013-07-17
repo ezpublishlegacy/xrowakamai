@@ -10,7 +10,7 @@ interface ContentModifiedEvaluator
      * @param string $moduleName Modulename
      * @param string $functionName Viewname
      * @param mixed[] $array Paramters of the module
-     * @return boolean|int "false" weather the content has been modifed since or the ttl for the resource.
+     * @return boolean|int "false" whether the content has been modifed since or the ttl for the resource.
      */
     static function isNotModified( $moduleName, $functionName, $params, $time );
     /*
