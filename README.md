@@ -38,3 +38,9 @@ Debug Akamai Headers
 curl -v -s -o/dev/null -H "Pragma: akamai-x-cache-on, akamai-x-cache-remote-on, akamai-x-check-cacheable, akamai-x-get-cache-key, akamai-x-get-extracted-values, akamai-x-get-nonces, akamai-x-get-ssl-client-session-id, akamai-x-get-true-cache-key, akamai-x-serial-no" http://dev.example.com/
 
 curl -v -s -o/dev/null -H "Host: dev.example.com" http://193.0.0.0/
+
+Global Expiry
+
+Add this line to config.php to clear all cache fast.
+
+define ( 'CDN_GLOBAL_EXPIRY' , '2013-01-30 00:00:00 GMT' );
