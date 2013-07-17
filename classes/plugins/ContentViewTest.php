@@ -27,9 +27,9 @@ class ContentViewTest implements ContentModifiedEvaluator
             'node_id' => $params[1] 
         );
         $node = eZPersistentObject::fetchObject( eZContentObjectTreeNode::definition(), null, $conds, true );
-        if ( $node )
+        if ( $node and ( $node->attribute( 'modified_subnode' ) <= $time ) )
         {
-            return $node->attribute( 'modified_subnode' ) <= $time;
+            return self::ttl( $moduleName, $functionName, $params );
         }
         else
         {

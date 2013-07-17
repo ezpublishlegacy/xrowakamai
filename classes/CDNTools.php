@@ -8,7 +8,31 @@ class CDNTools
 {
     static private $debug = null;
     static private $ttl = null;
-
+    static function cacheHeader( $ttl = null, $last_modified = null )
+    {
+        if ( $ttl === null || !is_numeric($ttl) )
+        {
+            return false;
+        }
+        header_remove("Expires");
+        header_remove("X-Powered-By");
+        
+        /**
+         * max-age,no-store,no-cache,pre-check (serves as a max-age setting if there is no max-age) post-check (serves as an Akamai Prefresh setting)
+        */
+        if ( $ttl )
+        {
+            header( 'Cache-Control: public, must-revalidate, max-age=' . $ttl );
+            header( 'Edge-control: !log-cookie,max-age=60' );
+        }
+        if ( $last_modified )
+        {
+            header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', $last_modified ) . ' GMT' );
+        }
+        header( 'Age: 0' );
+        header( 'Pragma: ' );
+    }
+    
     static function ttl()
     {
         if ( self::$ttl === null )

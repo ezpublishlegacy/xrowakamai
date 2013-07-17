@@ -76,29 +76,29 @@ class AkamaiConnector implements CDNConnector
                 $expire = $time + $rule;
                 if ( $expire < time() )
                 {
-                    $result = true;
-                }
-                else
-                {
-                    $result = false;
+                    header( "HTTP/1.1 304 Not Modified" );
+                    CDNTools::cacheHeader( $expire, $time );
+                    if( CDNTools::debug() )
+                    {
+                        eZLog::write( "304 " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], "xrowcdn_304.log");
+                    }
+                    eZExecution::cleanExit();
                 }
             }
             elseif ( isset( $rule ) && in_array( self::CLASSNAMESPACE, class_implements( $rule ) ) )
             {
-                $result = call_user_func( $rule . "::isNotModified", $moduleName, $functionName, $params, $time );
-            }
-            elseif ( isset( $rule ) && !in_array( self::CLASSNAMESPACE, class_implements( $rule ) ) )
-            {
-                throw new Exception( "Class '$rule' does`t implement " . self::CLASSNAMESPACE . "." );
-            }
-            if ( !empty( $result ) )
-            {
+                $ttl = call_user_func( $rule . "::isNotModified", $moduleName, $functionName, $params, $time );
                 header( "HTTP/1.1 304 Not Modified" );
+                CDNTools::cacheHeader( $ttl, $time );
                 if( CDNTools::debug() )
                 {
                     eZLog::write( "304 " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], "xrowcdn_304.log");
                 }
                 eZExecution::cleanExit();
+            }
+            elseif ( isset( $rule ) && !in_array( self::CLASSNAMESPACE, class_implements( $rule ) ) )
+            {
+                throw new Exception( "Class '$rule' does`t implement " . self::CLASSNAMESPACE . "." );
             }
         }
         return true;
@@ -136,17 +136,7 @@ class AkamaiConnector implements CDNConnector
         }
         if ( isset( $rule ) && is_numeric( $rule ) )
         {
-            header_remove("Expires");
-            header_remove("X-Powered-By");
-            header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', time() ) . ' GMT' );
-            /**
-             * max-age,no-store,no-cache,pre-check (serves as a max-age setting if there is no max-age)
-• post-check (serves as an Akamai Prefresh setting)
-             */
-            header( 'Cache-Control: public, must-revalidate, max-age=' . $rule );
-            header( 'Edge-control: !log-cookie,max-age=60' );
-            header( 'Age: 0' );
-            header( 'Pragma: ' );
+            CDNTools::cacheHeader( $rule, time() );
             if( CDNTools::debug() )
             {
                 eZLog::write( "now/$rule " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], "xrowcdn_200.log");
@@ -155,19 +145,10 @@ class AkamaiConnector implements CDNConnector
         elseif ( isset( $rule ) && in_array( self::CLASSNAMESPACE, class_implements( $rule ) ) )
         {
             $last_modified = call_user_func( $rule . "::getLastModified", $moduleName, $functionName, $params  );
-            if ( $last_modified )
-            {
-                header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', $last_modified ) . ' GMT' );
-            }
             $ttl = call_user_func( $rule . "::ttl", $moduleName, $functionName, $params );
             if ( $ttl )
             {
-                header_remove("Expires");
-                header_remove("X-Powered-By");
-                header( 'Cache-Control: public, must-revalidate, max-age=' . $ttl );
-                header( 'Edge-control: !log-cookie,max-age=60' );
-                header( 'Age: 0' );
-                header( 'Pragma: ' );
+                CDNTools::cacheHeader( $ttl, $last_modified );
             }
             if( CDNTools::debug() )
             {
