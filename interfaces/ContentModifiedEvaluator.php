@@ -10,6 +10,7 @@ interface ContentModifiedEvaluator
      * @param string $moduleName Modulename
      * @param string $functionName Viewname
      * @param mixed[] $array Paramters of the module
+	 * @param int $time If modified since unix timestamp
      * @return boolean|int "false" whether the content has been modifed since or the ttl for the resource.
      */
     static function isNotModified( $moduleName, $functionName, $params, $time );
