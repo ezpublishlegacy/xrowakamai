@@ -24,7 +24,7 @@ class ContentViewTest implements ContentModifiedEvaluator
             return false;
         }
         $conds = array( 
-            'node_id' => $params[1] 
+            'node_id' => (int)$params[1] 
         );
         $node = eZPersistentObject::fetchObject( eZContentObjectTreeNode::definition(), null, $conds, true );
         if ( $node and ( $node->attribute( 'modified_subnode' ) <= $time ) )
@@ -39,7 +39,7 @@ class ContentViewTest implements ContentModifiedEvaluator
 
     static function getLastModified( $moduleName, $functionName, $params )
     {
-        $node = eZContentObjectTreeNode::fetch( $params['NodeID'] );
+        $node = eZContentObjectTreeNode::fetch( (int)$params[1] );
         if ( $node instanceof eZContentObjectTreeNode )
         {
             return $node->attribute( 'modified_subnode' );

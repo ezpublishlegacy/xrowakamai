@@ -35,7 +35,7 @@ class AkamaiConnector implements CDNConnector
     }
 
     /**
-     * @see xrowCDNConnector::checkNotModified()
+     * @see xrowCDNConnector::clearCacheByObject()
      */
     static function clearCacheByObject( eZContentObject $object )
     {
@@ -70,7 +70,6 @@ class AkamaiConnector implements CDNConnector
                     $rule = $list[$moduleName . '/*'];
                 }
             }
-            $test =class_implements( $rule );
             if ( isset( $rule ) && is_numeric( $rule ) )
             {
                 $expire = $time + $rule;
@@ -80,7 +79,7 @@ class AkamaiConnector implements CDNConnector
                     CDNTools::cacheHeader( $expire, $time );
                     if( CDNTools::debug() )
                     {
-                        eZLog::write( "304 " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], "xrowcdn_304.log");
+                        eZLog::write( "Status:304 Expire:" . $expire . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
                     }
                     eZExecution::cleanExit();
                 }
@@ -88,18 +87,22 @@ class AkamaiConnector implements CDNConnector
             elseif ( isset( $rule ) && in_array( self::CLASSNAMESPACE, class_implements( $rule ) ) )
             {
                 $ttl = call_user_func( $rule . "::isNotModified", $moduleName, $functionName, $params, $time );
-                header( "HTTP/1.1 304 Not Modified" );
-                CDNTools::cacheHeader( $ttl, $time );
-                if( CDNTools::debug() )
+                if( $ttl )
                 {
-                    eZLog::write( "304 " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], "xrowcdn_304.log");
+                    header( "HTTP/1.1 304 Not Modified" );
+                    CDNTools::cacheHeader( $ttl, $time );
+                    if( CDNTools::debug() )
+                    {
+                        eZLog::write( "Status:304 TTL:" . $ttl . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
+                    }
+                    eZExecution::cleanExit();
                 }
-                eZExecution::cleanExit();
             }
             elseif ( isset( $rule ) && !in_array( self::CLASSNAMESPACE, class_implements( $rule ) ) )
             {
                 throw new Exception( "Class '$rule' does`t implement " . self::CLASSNAMESPACE . "." );
             }
+            eZLog::write( "PROBE:" . $_SERVER['HTTP_IF_MODIFIED_SINCE'] . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
         }
         return true;
     }
@@ -119,7 +122,7 @@ class AkamaiConnector implements CDNConnector
         }
         $moduleName = $GLOBALS['eZRequestedModuleParams']['module_name'];
         $functionName = $GLOBALS['eZRequestedModuleParams']['function_name'];
-        $params = $GLOBALS['eZRequestedModuleParams']['parameters'];
+        $params = CDNTools::normalizeParams( $GLOBALS['eZRequestedModuleParams']['parameters'] );
 
         if ( $ini->hasVariable( 'Settings', 'Modules' ) )
         {
@@ -138,7 +141,7 @@ class AkamaiConnector implements CDNConnector
             CDNTools::cacheHeader( $rule, time() );
             if( CDNTools::debug() )
             {
-                eZLog::write( "now/$rule " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], "xrowcdn_200.log");
+                eZLog::write( "Status:200 TTL:$rule " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
             }
         }
         elseif ( isset( $rule ) && in_array( self::CLASSNAMESPACE, class_implements( $rule ) ) )
@@ -151,7 +154,7 @@ class AkamaiConnector implements CDNConnector
             }
             if( CDNTools::debug() )
             {
-                eZLog::write( "$last_modified/$ttl " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], "xrowcdn_200.log");
+                eZLog::write( "Status:200 TTL:$ttl " . gmdate( 'D, d M Y H:i:s', $last_modified ) . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
             }
         }
         elseif ( isset( $rule ) && !in_array( self::CLASSNAMESPACE, class_implements( $rule ) ) )

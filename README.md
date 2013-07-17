@@ -29,6 +29,13 @@ Set an plugin wiht smart logic to handle the request.
 
 Modules[content/view]=ContentViewTest
 
+* Configure Event Listeners
+
+Alter those settings in the site.ini
+[Event]
+Listeners[]=module/start@AkamaiConnector::checkNotModified
+Listeners[]=response/output@AkamaiConnector::deliver
+
 Create a new Plugin
 
 See ContentViewTest.php as an example. Beware and use as less SQL queries as possible.

@@ -8,6 +8,16 @@ class CDNTools
 {
     static private $debug = null;
     static private $ttl = null;
+    static private $edgettl = null;
+    static function normalizeParams( $params )
+    {
+        $params2 = array();
+        foreach($params as $param)
+        {
+            $params2[] = $param;
+        }
+        return $params2;
+    }
     static function cacheHeader( $ttl = null, $last_modified = null )
     {
         if ( $ttl === null || !is_numeric($ttl) )
@@ -23,7 +33,7 @@ class CDNTools
         if ( $ttl )
         {
             header( 'Cache-Control: public, must-revalidate, max-age=' . $ttl );
-            header( 'Edge-control: !log-cookie,max-age=60' );
+            header( 'Edge-control: !log-cookie,max-age=' . self::edgettl() );
         }
         if ( $last_modified )
         {
@@ -32,13 +42,27 @@ class CDNTools
         header( 'Age: 0' );
         header( 'Pragma: ' );
     }
-    
+    static function edgettl()
+    {
+        if ( self::$edgettl === null )
+        {
+            $ini = eZINI::instance( 'xrowcdn.ini' );
+            if ( $ini->hasVariable ( 'Settings', 'EdgeTTL' ) )
+            {
+                self::$edgettl = (int)$ini->variable ( 'Settings', 'EdgeTTL' );
+            }
+            else
+            {
+                self::$edgettl = 70;
+            }
+        }
+        return self::$edgettl;
+    }
+
     static function ttl()
     {
         if ( self::$ttl === null )
         {
-            // Using memcached options
-            $options = array();
             $ini = eZINI::instance( 'xrowcdn.ini' );
             if ( $ini->hasVariable ( 'Settings', 'TTL' ) )
             {
@@ -56,11 +80,14 @@ class CDNTools
         if ( self::$debug === null )
         {
             $ini = eZINI::instance( 'xrowcdn.ini' );
-            if ( $ini->hasVariable ( 'Settings', 'Debug' ) and $ini->variable ( 'Settings', 'Debug' ) == 'enbaled' )
+            if ( $ini->hasVariable ( 'Settings', 'Debug' ) and $ini->variable ( 'Settings', 'Debug' ) == 'enabled' )
             {
                 self::$debug = true;
             }
-            self::$debug = false;
+            else
+            {
+                self::$debug = false;
+            }
         }
         return self::$debug;
     }
