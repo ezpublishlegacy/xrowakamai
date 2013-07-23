@@ -9,15 +9,7 @@ class CDNTools
     static private $debug = null;
     static private $ttl = null;
     static private $edgettl = null;
-    static function normalizeParams( $params )
-    {
-        $params2 = array();
-        foreach($params as $param)
-        {
-            $params2[] = $param;
-        }
-        return $params2;
-    }
+
     static function cacheHeader( $ttl = null, $last_modified = null )
     {
         if ( $ttl === null || !is_numeric($ttl) )
@@ -42,6 +34,7 @@ class CDNTools
         header( 'Age: 0' );
         header( 'Pragma: ' );
     }
+
     static function edgettl()
     {
         if ( self::$edgettl === null )
@@ -75,6 +68,7 @@ class CDNTools
         }
         return self::$ttl;
     }
+
     static function debug()
     {
         if ( self::$debug === null )

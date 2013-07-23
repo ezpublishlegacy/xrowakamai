@@ -6,7 +6,7 @@ index 73197ee..dfbcba7 100644
           $moduleCheck['result'] &&
           $module instanceof eZModule )
      {
-+        ezpEvent::getInstance()->notify( 'module/start', array( $module->attribute( 'name' ), $function_name, $params ) );
++        ezpEvent::getInstance()->notify( 'module/start', array( $module, $function_name, $params ) );
          // Run the module/function
          eZDebug::addTimingPoint( "Module start '" . $module->attribute( 'name' ) . "'" );
  

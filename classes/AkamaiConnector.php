@@ -45,15 +45,92 @@ class AkamaiConnector implements CDNConnector
         }
         return true;
     }
+    
+    static function setGlobalModuleParams( $module, $functionName, $parameters )
+    {
+        $uri = $GLOBALS['eZRequestedURI'];
+        $userParameters = $uri->userParameters();
+        $function = $module->Functions[$functionName];
+        $params = array();
+        $i = 0;
+        if ( isset( $function["params"] ) )
+        {
+            $functionParameterDefinitions = $function["params"];
+            foreach ( $functionParameterDefinitions as $param )
+            {
+                if ( isset( $parameters[$i] ) )
+                {
+                    $params[$param] = $parameters[$i];
+                }
+                /*else
+                {
+                    $params[$param] = null;
+                }*/
+                ++$i;
+            }
+        }
+        if ( array_key_exists( 'Limitation', $parameters  ) )
+        {
+            $params['Limitation'] =& $parameters[ 'Limitation' ];
+        }
+        // check for unordered parameters and initialize variables if they exist
+        if ( isset( $function["unordered_params"] ) )
+        {
+            $unorderedParams = $function["unordered_params"];
+            foreach ( $unorderedParams as $urlParamName => $variableParamName )
+            {
+                if ( in_array( $urlParamName, $parameters ) )
+                {
+                    $pos = array_search( $urlParamName, $parameters );
+
+                    $params[$variableParamName] = $parameters[$pos + 1];
+                }
+                /*else
+                {
+                    $params[$variableParamName] = false;
+                }*/
+            }
+        }
+        // Loop through user defines parameters
+        if ( $userParameters !== false )
+        {
+            if ( !isset( $params['UserParameters'] ) or
+                 !is_array( $params['UserParameters'] ) )
+            {
+                $params['UserParameters'] = array();
+            }
+
+            if ( is_array( $userParameters ) && count( $userParameters ) > 0 )
+            {
+                foreach ( array_keys( $userParameters ) as $paramKey )
+                {
+                    if( isset( $function['unordered_params'] ) &&
+                        $unorderedParams != null )
+                    {
+                        if ( array_key_exists( $paramKey, $unorderedParams ) )
+                        {
+                            $params[$unorderedParams[$paramKey]] = $userParameters[$paramKey];
+                            $unorderedParametersList[$unorderedParams[$paramKey]] = $userParameters[$paramKey];
+                        }
+                    }
+                    $params['UserParameters'][$paramKey] = $userParameters[$paramKey];
+                }
+            }
+        }
+        return $params;
+    }
+    
     /**
      * @see xrowCDNConnector::checkNotModified()
      */
-    static function checkNotModified( $moduleName, $functionName, $params )
+    static function checkNotModified( $module, $functionName, $params )
     {
+        $params = self::setGlobalModuleParams( $module, $functionName, $params );
+        $moduleName = $module->attribute( 'name' );
         if ( array_key_exists( 'HTTP_IF_MODIFIED_SINCE', $_SERVER ) and ( $_SERVER['REQUEST_METHOD'] == 'GET' or $_SERVER['REQUEST_METHOD'] == 'HEAD' ) )
         {
             $time = strtotime( $_SERVER['HTTP_IF_MODIFIED_SINCE'] );
-            if ( $time > time() or ! $time  or ( defined( 'CDN_GLOBAL_EXPIRY' ) and (strtotime( CDN_GLOBAL_EXPIRY ) > $time ) ) )
+            if ( $time > time() or ! $time  or ( defined( 'CDN_GLOBAL_EXPIRY' ) and ( strtotime( CDN_GLOBAL_EXPIRY ) > $time ) ) )
             {
                 return true;
             }
@@ -73,13 +150,13 @@ class AkamaiConnector implements CDNConnector
             if ( isset( $rule ) && is_numeric( $rule ) )
             {
                 $expire = $time + $rule;
-                if ( $expire < time() )
+                if ( $expire > time() )
                 {
                     header( "HTTP/1.1 304 Not Modified" );
-                    CDNTools::cacheHeader( $expire, $time );
+                    CDNTools::cacheHeader( $rule, $time );
                     if( CDNTools::debug() )
                     {
-                        eZLog::write( "Status:304 Expire:" . $expire . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
+                        eZLog::write( "Status:304 Expire:" . $expire . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], "xrowcdn.log" );
                     }
                     eZExecution::cleanExit();
                 }
@@ -102,7 +179,7 @@ class AkamaiConnector implements CDNConnector
             {
                 throw new Exception( "Class '$rule' does`t implement " . self::CLASSNAMESPACE . "." );
             }
-            eZLog::write( "PROBE:" . $_SERVER['HTTP_IF_MODIFIED_SINCE'] . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
+            //eZLog::write( "PROBE:" . $_SERVER['HTTP_IF_MODIFIED_SINCE'] . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
         }
         return true;
     }
@@ -122,8 +199,7 @@ class AkamaiConnector implements CDNConnector
         }
         $moduleName = $GLOBALS['eZRequestedModuleParams']['module_name'];
         $functionName = $GLOBALS['eZRequestedModuleParams']['function_name'];
-        $params = CDNTools::normalizeParams( $GLOBALS['eZRequestedModuleParams']['parameters'] );
-
+        $params = array_merge( $GLOBALS['eZRequestedModuleParams']['parameters'], self::setGlobalModuleParams( $GLOBALS['eZRequestedModule'], $functionName, array() ) );
         if ( $ini->hasVariable( 'Settings', 'Modules' ) )
         {
             $list = $ini->variable( 'Settings', 'Modules' );
