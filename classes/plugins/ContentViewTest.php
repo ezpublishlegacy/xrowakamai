@@ -19,17 +19,16 @@ class ContentViewTest implements ContentModifiedEvaluator
          * @TODO maybe implement
          * $expire = time() - self::ttl($moduleName, $functionName, $params); if ( $expire < $time ) { return false; }
          */
-        if ( ! is_numeric( $params['NodeID'] ) )
+        if ( isset( $params['NodeID'] ) && is_numeric( $params['NodeID'] ) )
         {
-            return false;
-        }
-        $conds = array( 
-            'node_id' => (int)$params['NodeID'] 
-        );
-        $node = eZPersistentObject::fetchObject( eZContentObjectTreeNode::definition(), null, $conds, true );
-        if ( $node and ( $node->attribute( 'modified_subnode' ) <= $time ) )
-        {
-            return self::ttl( $moduleName, $functionName, $params );
+            $conds = array( 
+                'node_id' => (int)$params['NodeID'] 
+            );
+            $node = eZPersistentObject::fetchObject( eZContentObjectTreeNode::definition(), null, $conds, true );
+            if ( $node and ( $node->attribute( 'modified_subnode' ) <= $time ) )
+            {
+                return self::ttl( $moduleName, $functionName, $params );
+            }
         }
         else
         {
@@ -39,10 +38,17 @@ class ContentViewTest implements ContentModifiedEvaluator
 
     static function getLastModified( $moduleName, $functionName, $params )
     {
-        $node = eZContentObjectTreeNode::fetch( (int)$params['NodeID'] );
-        if ( $node instanceof eZContentObjectTreeNode )
+        if ( isset( $params['NodeID'] ) && is_numeric( $params['NodeID'] ) )
         {
-            return $node->attribute( 'modified_subnode' );
+            $node = eZContentObjectTreeNode::fetch( (int)$params['NodeID'] );
+            if ( $node instanceof eZContentObjectTreeNode )
+            {
+                return $node->attribute( 'modified_subnode' );
+            }
+        }
+        else
+        {
+            return false;
         }
     }
 
