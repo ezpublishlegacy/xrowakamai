@@ -7,4 +7,7 @@
 #Listeners[]=module/start@XROW\CDN\AkamaiConnector::checkNotModified
 #Listeners[]=response/output@XROW\CDN\AkamaiConnector::deliver
 
+[RoleSettings]
+PolicyOmitList[]=xrowakamai/time
+
 */ ?>
