@@ -12,7 +12,7 @@ class CDNTools
 
     static function cacheHeader( $ttl = null, $last_modified = null )
     {
-        if ( $ttl === null || !is_numeric($ttl) )
+        if ( $ttl === null || !is_numeric( $ttl ) )
         {
             return false;
         }
@@ -25,7 +25,7 @@ class CDNTools
         if ( $ttl )
         {
             header( 'Cache-Control: public, must-revalidate, max-age=' . $ttl );
-            header( 'Edge-control: !log-cookie,max-age=' . self::edgettl() );
+            header( 'Edge-control: !log-cookie,max-age=' . $ttl );
         }
         if ( $last_modified )
         {
@@ -33,23 +33,6 @@ class CDNTools
         }
         header( 'Age: 0' );
         header( 'Pragma: ' );
-    }
-
-    static function edgettl()
-    {
-        if ( self::$edgettl === null )
-        {
-            $ini = eZINI::instance( 'xrowcdn.ini' );
-            if ( $ini->hasVariable ( 'Settings', 'EdgeTTL' ) )
-            {
-                self::$edgettl = (int)$ini->variable ( 'Settings', 'EdgeTTL' );
-            }
-            else
-            {
-                self::$edgettl = 70;
-            }
-        }
-        return self::$edgettl;
     }
 
     static function ttl()
