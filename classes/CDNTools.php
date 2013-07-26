@@ -10,7 +10,7 @@ class CDNTools
     static private $ttl = null;
     static private $edgettl = null;
 
-    static function cacheHeader( $ttl = null, $last_modified = null )
+    static function cacheHeader( $ttl = null, $last_modified = null, $etag = null )
     {
         if ( $ttl === null || !is_numeric( $ttl ) )
         {
@@ -24,13 +24,33 @@ class CDNTools
         */
         if ( $ttl )
         {
-            header( 'Cache-Control: public, must-revalidate, max-age=' . $ttl );
+            if( $etag !== null )
+            {
+                if ( empty( $etag ) )
+                {
+                    header( 'Cache-Control: public, must-revalidate' );
+                }
+                else
+                {
+                    header( 'Cache-Control: private, no-cache, must-revalidate' );
+                }
+            }
+            else
+            {
+                header( 'Cache-Control: public, must-revalidate, max-age=' . $ttl );
+            }
             header( 'Edge-control: !log-cookie,max-age=' . $ttl );
         }
         if ( $last_modified )
         {
             header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', $last_modified ) . ' GMT' );
         }
+
+        if( $etag !== null )
+        {
+            header( 'ETag: "' . $etag . '"' );
+        }
+
         header( 'Age: 0' );
         header( 'Pragma: ' );
     }

@@ -13,7 +13,7 @@
 #Modules[content/view]=ContentViewTest
 # eZ 5x
 #Modules[content/view]=XROW\CDN\ContentViewTest
-Modules[xrowakamai/time]=3600
+#Modules[xrowakamai/time]=3600
 
 Directories[]
 Directories[]=var

@@ -10,9 +10,20 @@ namespace XROW\CDN;
 use \eZPersistentObject as eZPersistentObject;
 use \eZContentObjectTreeNode as eZContentObjectTreeNode;
 */
-class ContentViewTest implements ContentModifiedEvaluator
+class ContentViewTest implements ContentModifiedEvaluator, ContentPermissionEvaluator
 {
-
+    static function etag( $moduleName, $functionName, $params )
+    {
+        $current_user = eZUser::currentUser();
+        if( !$current_user->isAnonymous() )
+        {
+            return eRASMoCookie::generateCookieValue( $current_user );
+        }
+        else
+        {
+            return "";
+        }
+    }
     static function isNotModified( $moduleName, $functionName, $params, $time )
     {
         /* 
