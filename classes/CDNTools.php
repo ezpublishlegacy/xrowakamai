@@ -26,7 +26,7 @@ class CDNTools
         {
             if( $etag !== null )
             {
-                header( 'Cache-Control: private, no-cache, must-revalidate' );
+                header( 'Cache-Control: no-cache, must-revalidate' );
             }
             else
             {
