@@ -26,14 +26,7 @@ class CDNTools
         {
             if( $etag !== null )
             {
-                if ( empty( $etag ) )
-                {
-                    header( 'Cache-Control: public, must-revalidate' );
-                }
-                else
-                {
-                    header( 'Cache-Control: private, no-cache, must-revalidate' );
-                }
+                header( 'Cache-Control: private, no-cache, must-revalidate' );
             }
             else
             {
@@ -48,7 +41,7 @@ class CDNTools
 
         if( $etag !== null )
         {
-            header( 'ETag: "' . $etag . '"' );
+            header( 'ETag: ' . $etag );
         }
 
         header( 'Age: 0' );

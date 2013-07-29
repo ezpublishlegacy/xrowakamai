@@ -131,8 +131,7 @@ class AkamaiConnector implements CDNConnector
         if ( array_key_exists( 'HTTP_IF_MODIFIED_SINCE', $_SERVER ) and ( $_SERVER['REQUEST_METHOD'] == 'GET' or $_SERVER['REQUEST_METHOD'] == 'HEAD' ) )
         {
             $ifNoneMatch = array_key_exists( 'HTTP_IF_NONE_MATCH', $_SERVER ) ? $_SERVER['HTTP_IF_NONE_MATCH'] : null;
-            
-        
+
             $time = strtotime( $_SERVER['HTTP_IF_MODIFIED_SINCE'] );
             if ( $time > time() or ! $time  or ( defined( 'CDN_GLOBAL_EXPIRY' ) and ( strtotime( CDN_GLOBAL_EXPIRY ) > $time ) ) )
             {
@@ -176,7 +175,7 @@ class AkamaiConnector implements CDNConnector
                         $etag = call_user_func( $rule . "::etag", $moduleName, $functionName, $params );
                     }
                     if( !$current_user->isAnonymous() and 
-                        ( strpos( $ifNoneMatch, '"' . $etag . '"' ) === false or strpos( $ifNoneMatch, '""' ) !== false )  )
+                        ( strpos( $ifNoneMatch, $etag ) === false or strpos( $ifNoneMatch, '""' ) !== false )  )
                     {
                         eZLog::write( "ETAG NOMATCH1: $ifNoneMatch " . $etag . " ". $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
                         return true; 

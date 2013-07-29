@@ -17,11 +17,11 @@ class ContentViewTest implements ContentModifiedEvaluator, ContentPermissionEval
         $current_user = eZUser::currentUser();
         if( !$current_user->isAnonymous() )
         {
-            return eRASMoCookie::generateCookieValue( $current_user );
+            return '"' . eRASMoCookie::generateCookieValue( $current_user ) . '"';
         }
         else
         {
-            return "";
+            return '""';
         }
     }
     static function isNotModified( $moduleName, $functionName, $params, $time )

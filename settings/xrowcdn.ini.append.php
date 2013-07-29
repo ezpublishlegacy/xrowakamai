@@ -1,6 +1,7 @@
 <?php /* #?ini charset="utf-8"?
 
 [Settings]
+# Time to live at the edge server
 #TTL=14400
 #Debug=enabled
 #SSL=disabled
