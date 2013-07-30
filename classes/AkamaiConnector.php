@@ -18,7 +18,7 @@ class AkamaiConnector implements CDNConnector
 {
     //const CLASSNAMESPACE = 'XROW\CDN\ContentModifiedEvaluator';
     const CLASSNAMESPACE = 'ContentModifiedEvaluator';
-    const PERMISSIONS = 'ContentPermissionEvaluator';
+
     /**
      * @see xrowCDNConnector::clearAll()
      */
@@ -26,6 +26,7 @@ class AkamaiConnector implements CDNConnector
     {
         return true;
     }
+
     /**
      * @see xrowCDNConnector::clearCacheByNode()
      */
@@ -46,7 +47,7 @@ class AkamaiConnector implements CDNConnector
         }
         return true;
     }
-    
+
     static function setGlobalModuleParams( $module, $functionName, $parameters )
     {
         $uri = $GLOBALS['eZRequestedURI'];
@@ -63,10 +64,6 @@ class AkamaiConnector implements CDNConnector
                 {
                     $params[$param] = $parameters[$i];
                 }
-                /*else
-                {
-                    $params[$param] = null;
-                }*/
                 ++$i;
             }
         }
@@ -83,13 +80,9 @@ class AkamaiConnector implements CDNConnector
                 if ( in_array( $urlParamName, $parameters ) )
                 {
                     $pos = array_search( $urlParamName, $parameters );
-
                     $params[$variableParamName] = $parameters[$pos + 1];
                 }
-                /*else
-                {
-                    $params[$variableParamName] = false;
-                }*/
+
             }
         }
         // Loop through user defines parameters
@@ -120,7 +113,7 @@ class AkamaiConnector implements CDNConnector
         }
         return $params;
     }
-    
+
     /**
      * @see xrowCDNConnector::checkNotModified()
      */
@@ -130,8 +123,6 @@ class AkamaiConnector implements CDNConnector
         $moduleName = $module->attribute( 'name' );
         if ( array_key_exists( 'HTTP_IF_MODIFIED_SINCE', $_SERVER ) and ( $_SERVER['REQUEST_METHOD'] == 'GET' or $_SERVER['REQUEST_METHOD'] == 'HEAD' ) )
         {
-            $ifNoneMatch = array_key_exists( 'HTTP_IF_NONE_MATCH', $_SERVER ) ? $_SERVER['HTTP_IF_NONE_MATCH'] : null;
-
             $time = strtotime( $_SERVER['HTTP_IF_MODIFIED_SINCE'] );
             if ( $time > time() or ! $time  or ( defined( 'CDN_GLOBAL_EXPIRY' ) and ( strtotime( CDN_GLOBAL_EXPIRY ) > $time ) ) )
             {
@@ -156,7 +147,7 @@ class AkamaiConnector implements CDNConnector
                 if ( $expire > time() )
                 {
                     header( "HTTP/1.1 304 Not Modified" );
-                    CDNTools::cacheHeader( $rule, $time, $ifNoneMatch );
+                    CDNTools::cacheHeader( $rule, $time );
                     if( CDNTools::debug() )
                     {
                         eZLog::write( "Status:304 Expire:" . $expire . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], "xrowcdn.log" );
@@ -166,32 +157,11 @@ class AkamaiConnector implements CDNConnector
             }
             elseif ( isset( $rule ) && in_array( self::CLASSNAMESPACE, class_implements( $rule ) ) )
             {
-                if( $ifNoneMatch )
-                {
-                    $current_user = eZUser::currentUser();
-                    $etag = null;
-                    if( in_array( self::PERMISSIONS, class_implements( $rule ) ) )
-                    {
-                        $etag = call_user_func( $rule . "::etag", $moduleName, $functionName, $params );
-                    }
-                    if( !$current_user->isAnonymous() and 
-                        ( strpos( $ifNoneMatch, $etag ) === false or strpos( $ifNoneMatch, '""' ) !== false )  )
-                    {
-                        eZLog::write( "ETAG NOMATCH1: $ifNoneMatch " . $etag . " ". $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
-                        return true; 
-                    }
-                    elseif( $current_user->isAnonymous() and strpos( $ifNoneMatch, '""'  ) === false )
-                    {
-                        eZLog::write( "ETAG NOMATCH2: $ifNoneMatch" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
-                        return true; 
-                    }
-                    eZLog::write( "ETAG MATCH: $ifNoneMatch " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
-                }  
                 $ttl = call_user_func( $rule . "::isNotModified", $moduleName, $functionName, $params, $time );
                 if( $ttl )
                 {
                     header( "HTTP/1.1 304 Not Modified" );
-                    CDNTools::cacheHeader( $ttl, $time, $ifNoneMatch );
+                    CDNTools::cacheHeader( $ttl, $time );
                     if( CDNTools::debug() )
                     {
                         eZLog::write( "Status:304 TTL:" . $ttl . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
@@ -201,12 +171,12 @@ class AkamaiConnector implements CDNConnector
             }
             elseif ( isset( $rule ) && !in_array( self::CLASSNAMESPACE, class_implements( $rule ) ) )
             {
-                throw new Exception( "Class '$rule' does`t implement " . self::CLASSNAMESPACE . "." );
+                throw new Exception( "Class '$rule' does't implement " . self::CLASSNAMESPACE . "." );
             }
-            //eZLog::write( "PROBE:" . $_SERVER['HTTP_IF_MODIFIED_SINCE'] . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
         }
         return true;
     }
+
     /**
      * @see xrowCDNConnector::deliver()
      */
@@ -250,12 +220,7 @@ class AkamaiConnector implements CDNConnector
             $ttl = call_user_func( $rule . "::ttl", $moduleName, $functionName, $params );
             if ( $ttl )
             {
-                $etag = null;
-                if( in_array( self::PERMISSIONS, class_implements( $rule ) ) )
-                {
-                    $etag = call_user_func( $rule . "::etag", $moduleName, $functionName, $params );
-                }
-                CDNTools::cacheHeader( $ttl, $last_modified, $etag );
+                CDNTools::cacheHeader( $ttl, $last_modified );
             }
             if( CDNTools::debug() )
             {
