@@ -124,7 +124,8 @@ class AkamaiConnector implements CDNConnector
         if ( array_key_exists( 'HTTP_IF_MODIFIED_SINCE', $_SERVER ) and ( $_SERVER['REQUEST_METHOD'] == 'GET' or $_SERVER['REQUEST_METHOD'] == 'HEAD' ) )
         {
             $time = strtotime( $_SERVER['HTTP_IF_MODIFIED_SINCE'] );
-            if ( $time > time() or ! $time  or ( defined( 'CDN_GLOBAL_EXPIRY' ) and ( strtotime( CDN_GLOBAL_EXPIRY ) > $time ) ) )
+
+            if ( ( $time > time() + 3600 ) or ! $time  or ( defined( 'CDN_GLOBAL_EXPIRY' ) and ( strtotime( CDN_GLOBAL_EXPIRY ) > $time ) ) )
             {
                 return true;
             }
