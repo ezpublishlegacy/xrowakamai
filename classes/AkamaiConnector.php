@@ -129,6 +129,11 @@ class AkamaiConnector implements CDNConnector
             {
                 return true;
             }
+            $logStringAkamai = '';
+            if( isset( $_SERVER['HTTP_X_FORWARDED_FOR'] ) )
+            {
+                $logStringAkamai = ' FORWARDED_FOR_IP: ' . $_SERVER['HTTP_X_FORWARDED_FOR'];
+            }
             $ini = eZINI::instance( "xrowcdn.ini" );
             if ( $ini->hasVariable( 'Settings', 'Modules' ) )
             {
@@ -151,7 +156,7 @@ class AkamaiConnector implements CDNConnector
                     CDNTools::cacheHeader( $rule, $time );
                     if( CDNTools::debug() )
                     {
-                        eZLog::write( "Status:304 Expire:" . $expire . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], "xrowcdn.log" );
+                        eZLog::write( "Status:304 Expire:" . $expire . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . $logStringAkamai, "xrowcdn.log" );
                     }
                     eZExecution::cleanExit();
                 }
@@ -165,7 +170,7 @@ class AkamaiConnector implements CDNConnector
                     CDNTools::cacheHeader( $ttl, $time );
                     if( CDNTools::debug() )
                     {
-                        eZLog::write( "Status:304 TTL:" . $ttl . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
+                        eZLog::write( "Status:304 TTL:" . $ttl . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . $logStringAkamai, "xrowcdn.log");
                     }
                     eZExecution::cleanExit();
                 }
@@ -192,6 +197,11 @@ class AkamaiConnector implements CDNConnector
         {
              return $html;
         }
+        $logStringAkamai = '';
+        if( isset( $_SERVER['HTTP_X_FORWARDED_FOR'] ) )
+        {
+            $logStringAkamai = ' FORWARDED_FOR_IP: ' . $_SERVER['HTTP_X_FORWARDED_FOR'];
+        }
         $moduleName = $GLOBALS['eZRequestedModuleParams']['module_name'];
         $functionName = $GLOBALS['eZRequestedModuleParams']['function_name'];
         $params = array_merge( $GLOBALS['eZRequestedModuleParams']['parameters'], self::setGlobalModuleParams( $GLOBALS['eZRequestedModule'], $functionName, array() ) );
@@ -212,7 +222,7 @@ class AkamaiConnector implements CDNConnector
             CDNTools::cacheHeader( $rule, time() );
             if( CDNTools::debug() )
             {
-                eZLog::write( "Status:200 TTL:$rule " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
+                eZLog::write( "Status:200 TTL:$rule " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . $logStringAkamai, "xrowcdn.log");
             }
         }
         elseif ( isset( $rule ) && in_array( self::CLASSNAMESPACE, class_implements( $rule ) ) )
@@ -225,7 +235,7 @@ class AkamaiConnector implements CDNConnector
             }
             if( CDNTools::debug() )
             {
-                eZLog::write( "Status:200 TTL:$ttl " . gmdate( 'D, d M Y H:i:s', $last_modified ) . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
+                eZLog::write( "Status:200 TTL:$ttl " . gmdate( 'D, d M Y H:i:s', $last_modified ) . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . $logStringAkamai, "xrowcdn.log");
             }
         }
         elseif ( isset( $rule ) && !in_array( self::CLASSNAMESPACE, class_implements( $rule ) ) )
