@@ -58,4 +58,10 @@ Suffixes[]
 Suffixes[]=js
 Replacement=//www.example.com
 
+#[ContentViewSettings]
+#NodeList[]
+# Array with NodeID and time combinations.
+#NodeList[123]=3600
+#NodeList[1234]=480
+
 */ ?>

@@ -5,6 +5,6 @@ index 81758cf..ed2a02a 100644
  
              if ( !$displayMissingModule && $moduleCheck['result'] && $this->module instanceof eZModule )
              {
-+                ezpEvent::getInstance()->notify( 'module/start', array( $module, $functionName, $params ) );
++                ezpEvent::getInstance()->notify( 'module/start', array( $this->module, $functionName, $params ) );
                  // Run the module/function
                  eZDebug::addTimingPoint( "Module start '" . $this->module->attribute( 'name' ) . "'" );

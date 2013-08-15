@@ -1,5 +1,6 @@
-xrowakamai
-==========
+# xrowakamai #
+
+## Introduction ##
 
 Integration with Akamai for eZ Publish
 
@@ -9,7 +10,7 @@ The one event is set before processing the request as soon as possible to determ
 
 A second event is set after processing the request and sets additional headers.
 
-Setup
+## Setup ##
 
 * Active the extenstion
 * Apply patch from patch/[version]/xrowakamai.diff The patch will remove expires header from index.php or ezpkernelweb.php
@@ -36,17 +37,26 @@ Alter those settings in the site.ini
 Listeners[]=module/start@AkamaiConnector::checkNotModified
 Listeners[]=response/output@AkamaiConnector::deliver
 
-Create a new Plugin
+## Create a new Plugin ##
 
 See ContentViewTest.php as an example. Beware and use as less SQL queries as possible.
 
-Debug Akamai Headers
+## Customizations ##
+
+Howto set a custom expiry time for certain nodes?
+
+To set a custom expiry you can you the NodeList Array of the xrowcdn.ini.  The configuration looks like:
+
+[ContentViewSettings].NodeList[NodeID]=ttl
+ 
+
+## Debug Akamai Headers ##
 
 curl -v -s -o/dev/null -H "Pragma: akamai-x-cache-on, akamai-x-cache-remote-on, akamai-x-check-cacheable, akamai-x-get-cache-key, akamai-x-get-extracted-values, akamai-x-get-nonces, akamai-x-get-ssl-client-session-id, akamai-x-get-true-cache-key, akamai-x-serial-no" http://dev.example.com/
 
 curl -v -s -o/dev/null -H "Host: dev.example.com" http://193.0.0.0/
 
-Global Expiry
+## Global Expiry ##
 
 Add this line to config.php to clear all cache fast.
 

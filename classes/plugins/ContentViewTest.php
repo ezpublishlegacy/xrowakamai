@@ -20,6 +20,25 @@ class ContentViewTest implements ContentModifiedEvaluator
          */
         if ( isset( $params['NodeID'] ) && is_numeric( $params['NodeID'] ) )
         {
+            
+            if( eZINI::instance( "xrowcdn.ini")->hasVariable( "ContentViewSettings", "NodeList" ) )
+            {
+                $nodes = eZINI::instance( "xrowcdn.ini")->variable( "ContentViewSettings", "NodeList" );
+                
+                if ( array_key_exists($params['NodeID'], $nodes) and is_numeric($nodes[$params['NodeID']]) )
+                {
+                    $ttl = self::ttl($moduleName, $functionName, $params);
+                    $expire = time() - self::ttl($moduleName, $functionName, $params);
+                    if ( $expire < $time )
+                    {
+                    	return $ttl;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
             $conds = array( 
                 'node_id' => (int)$params['NodeID'] 
             );
@@ -39,6 +58,14 @@ class ContentViewTest implements ContentModifiedEvaluator
     {
         if ( isset( $params['NodeID'] ) && is_numeric( $params['NodeID'] ) )
         {
+            if( eZINI::instance( "xrowcdn.ini")->hasVariable( "ContentViewSettings", "NodeList" ) )
+            {
+                $nodes = eZINI::instance( "xrowcdn.ini")->variable( "ContentViewSettings", "NodeList" );
+                if ( array_key_exists($params['NodeID'], $nodes) and is_numeric($nodes[$params['NodeID']]) )
+                {
+                    return time();
+                }
+            }
             $node = eZContentObjectTreeNode::fetch( (int)$params['NodeID'] );
             if ( $node instanceof eZContentObjectTreeNode )
             {
@@ -53,6 +80,14 @@ class ContentViewTest implements ContentModifiedEvaluator
 
     static function ttl( $moduleName, $functionName, $params )
     {
+        if( eZINI::instance( "xrowcdn.ini")->hasVariable( "ContentViewSettings", "NodeList" ) )
+        {
+            $nodes = eZINI::instance( "xrowcdn.ini")->variable( "ContentViewSettings", "NodeList" );
+            if ( array_key_exists($params['NodeID'], $nodes) and is_numeric($nodes[$params['NodeID']]) )
+            {
+                return (int) $nodes[$params['NodeID']];
+            }
+        }
         return 1;
     }
 }
