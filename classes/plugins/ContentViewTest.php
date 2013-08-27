@@ -15,13 +15,21 @@ class ContentViewTest implements ContentModifiedEvaluator, ContentPermissionEval
     static function etag( $moduleName, $functionName, $params )
     {
         $current_user = eZUser::currentUser();
+        $etag = new ETAG();
+        $etag->time = self::getLastModified($moduleName, $functionName, $params);
+        if ( $etag->time < ( time() - CDNTools::maxttl() ) )
+        {
+            $etag->time = time();
+        }
         if( !$current_user->isAnonymous() )
         {
-            return '"' . eRASMoCookie::generateCookieValue( $current_user ) . '"';
+            $etag->permission = eRASMoCookie::generateCookieValue( $current_user );
+            return $etag;
         }
         else
         {
-            return '""';
+            $etag->permission = CDNTools::ANONYMOUSHASH;
+            return $etag;
         }
     }
     static function isNotModified( $moduleName, $functionName, $params, $time )
@@ -100,6 +108,6 @@ class ContentViewTest implements ContentModifiedEvaluator, ContentPermissionEval
                 return (int) $nodes[$params['NodeID']];
             }
         }
-        return 1;
+        return CDNTools::ttl();
     }
 }

@@ -8,9 +8,10 @@ class CDNTools
 {
     static private $debug = null;
     static private $ttl = null;
-    static private $edgettl = null;
-
-    static function cacheHeader( $ttl = null, $last_modified = null, $etag = null )
+    static private $maxttl = null;
+    //remote_id of anonymous user
+    const ANONYMOUSHASH = "faaeb9be3bd98ed09f606fc16d144eca";
+    static function cacheHeader( $ttl = null, $last_modified = null, ETAG $etag = null )
     {
         if ( $ttl === null || !is_numeric( $ttl ) )
         {
@@ -26,7 +27,8 @@ class CDNTools
         {
             if( $etag !== null )
             {
-                header( 'Cache-Control: no-cache, must-revalidate' );
+                header( 'Cache-Control: private, must-revalidate, max-age=0' );
+                header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' );
             }
             else
             {
@@ -41,9 +43,8 @@ class CDNTools
 
         if( $etag !== null )
         {
-            header( 'ETag: ' . $etag );
+            header( 'ETag: ' . $etag->generate() );
         }
-
         header( 'Age: 0' );
         header( 'Pragma: ' );
     }
@@ -59,12 +60,27 @@ class CDNTools
             }
             else
             {
-                self::$ttl = 4*3600;
+                self::$ttl = 1800;
             }
         }
         return self::$ttl;
     }
-
+    static function maxttl()
+    {
+        if ( self::$maxttl === null )
+        {
+            $ini = eZINI::instance( 'xrowcdn.ini' );
+            if ( $ini->hasVariable ( 'Settings', 'MaxTTL' ) )
+            {
+                self::$maxttl = (int)$ini->variable ( 'Settings', 'MaxTTL' );
+            }
+            else
+            {
+                self::$maxttl = 4*3600;
+            }
+        }
+        return self::$maxttl;
+    }
     static function debug()
     {
         if ( self::$debug === null )

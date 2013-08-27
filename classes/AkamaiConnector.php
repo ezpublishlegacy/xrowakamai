@@ -46,7 +46,18 @@ class AkamaiConnector implements CDNConnector
         }
         return true;
     }
-    
+    private function isETAGMatch( ETAG $etag1, ETAG $etag2  )
+    {
+        if( $etag1->permission !== $etag2->permission  )
+        {
+            return false;
+        }
+        elseif( abs( $etag1->time - $etag2->time ) > CDNTools::maxttl() )
+        {
+            return false;
+        }
+        return true;
+    }
     static function setGlobalModuleParams( $module, $functionName, $parameters )
     {
         $uri = $GLOBALS['eZRequestedURI'];
@@ -130,7 +141,7 @@ class AkamaiConnector implements CDNConnector
         $moduleName = $module->attribute( 'name' );
         if ( array_key_exists( 'HTTP_IF_MODIFIED_SINCE', $_SERVER ) and ( $_SERVER['REQUEST_METHOD'] == 'GET' or $_SERVER['REQUEST_METHOD'] == 'HEAD' ) )
         {
-            $ifNoneMatch = array_key_exists( 'HTTP_IF_NONE_MATCH', $_SERVER ) ? $_SERVER['HTTP_IF_NONE_MATCH'] : null;
+            $ifNoneMatch = array_key_exists( 'HTTP_IF_NONE_MATCH', $_SERVER ) ? new ETAG( $_SERVER['HTTP_IF_NONE_MATCH'] ) : null;
 
             $time = strtotime( $_SERVER['HTTP_IF_MODIFIED_SINCE'] );
 
@@ -174,25 +185,17 @@ class AkamaiConnector implements CDNConnector
             {
                 if( $ifNoneMatch )
                 {
-                    $current_user = eZUser::currentUser();
-                    $etag = null;
                     if( in_array( self::PERMISSIONS, class_implements( $rule ) ) )
                     {
                         $etag = call_user_func( $rule . "::etag", $moduleName, $functionName, $params );
                     }
-                    if( !$current_user->isAnonymous() and 
-                        ( strpos( $ifNoneMatch, $etag ) === false or strpos( $ifNoneMatch, '""' ) !== false )  )
+                    if( !self::isETAGMatch( $ifNoneMatch, $etag)  )
                     {
-                        eZLog::write( "ETAG NOMATCH1: $ifNoneMatch " . $etag . " ". $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
-                        return true; 
+                        eZLog::write( "ETAG NOMATCH: " . $ifNoneMatch->generate() . " " . $etag->generate() . " ". $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
+                        return true;
                     }
-                    elseif( $current_user->isAnonymous() and strpos( $ifNoneMatch, '""'  ) === false )
-                    {
-                        eZLog::write( "ETAG NOMATCH2: $ifNoneMatch" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
-                        return true; 
-                    }
-                    eZLog::write( "ETAG MATCH: $ifNoneMatch " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
-                }  
+                    eZLog::write( "ETAG MATCH: " . $ifNoneMatch->generate() . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
+                }
                 $ttl = call_user_func( $rule . "::isNotModified", $moduleName, $functionName, $params, $time );
                 if( $ttl )
                 {
@@ -209,7 +212,6 @@ class AkamaiConnector implements CDNConnector
             {
                 throw new Exception( "Class '$rule' does`t implement " . self::CLASSNAMESPACE . "." );
             }
-            //eZLog::write( "PROBE:" . $_SERVER['HTTP_IF_MODIFIED_SINCE'] . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
         }
         return true;
     }

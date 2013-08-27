@@ -3,6 +3,8 @@
 [Settings]
 # Time to live at the edge server
 #TTL=14400
+# Maxium Time to live at the origin
+#TTL=14400
 #Debug=enabled
 #SSL=disabled
 #Filter=CDNFilter::filter

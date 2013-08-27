@@ -9,7 +9,7 @@ interface ContentPermissionEvaluator
      * @param string $moduleName Modulename
      * @param string $functionName Viewname
      * @param mixed[] $array Paramters of the module
-     * @return string Etag Hash
+     * @return ETAG Etag Hash
      */
     static function etag( $moduleName, $functionName, $params );
 }
