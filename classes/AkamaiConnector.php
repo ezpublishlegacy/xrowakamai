@@ -46,7 +46,7 @@ class AkamaiConnector implements CDNConnector
         }
         return true;
     }
-    private function isETAGMatch( ETAG $etag1, ETAG $etag2  )
+    static private function isETAGMatch( ETAG $etag1, ETAG $etag2  )
     {
         if( $etag1->permission !== $etag2->permission  )
         {
