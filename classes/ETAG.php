@@ -9,6 +9,7 @@ class ETAG
         {
         	return;
         }
+        $string = rtrim( $string, '-gzip' );
         $string = rtrim( $string, '"' );
         $string = ltrim( $string, '"' );
         $list = explode( "-", $string );
