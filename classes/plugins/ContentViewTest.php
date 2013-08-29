@@ -23,7 +23,14 @@ class ContentViewTest implements ContentModifiedEvaluator, ContentPermissionEval
         }
         if( !$current_user->isAnonymous() )
         {
-            $etag->permission = eRASMoCookie::generateCookieValue( $current_user );
+            if ( class_exists( 'eRASMoCookie' ) )
+            {
+                $etag->permission = eRASMoCookie::generateCookieValue( $current_user );
+            }
+            else
+            {
+                $etag->permission = $current_user->attribute( 'contentobject' )->attribute( 'remote_id' );
+            }
             return $etag;
         }
         else
