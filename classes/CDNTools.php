@@ -19,12 +19,14 @@ class CDNTools
         }
         header_remove("Expires");
         header_remove("X-Powered-By");
+
         
         /**
          * max-age,no-store,no-cache,pre-check (serves as a max-age setting if there is no max-age) post-check (serves as an Akamai Prefresh setting)
         */
         if ( $ttl )
         {
+            header_remove("Pragma");
             if( $etag !== null )
             {
                 header( 'Cache-Control: private, must-revalidate, max-age=0' );
