@@ -35,6 +35,7 @@ class CDNTools
                 header( 'Cache-Control: public, must-revalidate, max-age=' . $ttl );
             }
             header( 'Edge-control: !log-cookie,max-age=' . $ttl );
+            header( 'Age: 0' );
         }
         if ( $last_modified )
         {
@@ -44,9 +45,8 @@ class CDNTools
         if( $etag !== null )
         {
             header( 'ETag: ' . $etag->generate() );
+            header( 'Pragma: no-cache' );
         }
-        header( 'Age: 0' );
-        header( 'Pragma: ' );
     }
 
     static function ttl()
