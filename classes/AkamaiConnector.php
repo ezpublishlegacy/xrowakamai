@@ -184,7 +184,7 @@ class AkamaiConnector implements CDNConnector
                     {
                         $etag = call_user_func( $rule . "::etag", $moduleName, $functionName, $params );
                     }
-                    if( !self::isETAGMatch( $ifNoneMatch, $etag)  )
+                    if( !self::isETAGMatch( $ifNoneMatch, $etag ) )
                     {
                         eZLog::write( "ETAG NOMATCH: " . $ifNoneMatch->generate() . " " . $etag->generate() . " ". $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
                         return true;

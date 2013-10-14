@@ -25,10 +25,7 @@ class ContentViewTest implements ContentModifiedEvaluator, ContentPermissionEval
         {
             if ( class_exists( 'eRASMoCookie' ) )
             {
-                if( $cookie = self::getCookie() )
-                    $etag->permission = $cookie;
-                else
-                    $etag->permission = eRASMoCookie::generateCookieValue( $current_user );
+                $etag->permission = eRASMoCookie::generateCookieValue( $current_user );
             }
             else
             {
@@ -50,7 +47,6 @@ class ContentViewTest implements ContentModifiedEvaluator, ContentPermissionEval
          */
         if ( isset( $params['NodeID'] ) && is_numeric( $params['NodeID'] ) )
         {
-            
             if( eZINI::instance( "xrowcdn.ini")->hasVariable( "ContentViewSettings", "NodeList" ) )
             {
                 $nodes = eZINI::instance( "xrowcdn.ini")->variable( "ContentViewSettings", "NodeList" );
@@ -61,7 +57,7 @@ class ContentViewTest implements ContentModifiedEvaluator, ContentPermissionEval
                     $expire = time() - self::ttl($moduleName, $functionName, $params);
                     if ( $expire < $time )
                     {
-                    	return $ttl;
+                        return $ttl;
                     }
                     else
                     {
