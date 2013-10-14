@@ -62,70 +62,65 @@ class AkamaiConnector implements CDNConnector
     {
         $uri = $GLOBALS['eZRequestedURI'];
         $userParameters = $uri->userParameters();
-        $function = $module->Functions[$functionName];
         $params = array();
-        $i = 0;
-        if ( isset( $function["params"] ) )
+        if( isset( $module->Functions[$functionName] ) )
         {
-            $functionParameterDefinitions = $function["params"];
-            foreach ( $functionParameterDefinitions as $param )
+            $function = $module->Functions[$functionName];
+            $i = 0;
+            if ( isset( $function["params"] ) )
             {
-                if ( isset( $parameters[$i] ) )
+                $functionParameterDefinitions = $function["params"];
+                foreach ( $functionParameterDefinitions as $param )
                 {
-                    $params[$param] = $parameters[$i];
-                }
-                /*else
-                {
-                    $params[$param] = null;
-                }*/
-                ++$i;
-            }
-        }
-        if ( array_key_exists( 'Limitation', $parameters  ) )
-        {
-            $params['Limitation'] =& $parameters[ 'Limitation' ];
-        }
-        // check for unordered parameters and initialize variables if they exist
-        if ( isset( $function["unordered_params"] ) )
-        {
-            $unorderedParams = $function["unordered_params"];
-            foreach ( $unorderedParams as $urlParamName => $variableParamName )
-            {
-                if ( in_array( $urlParamName, $parameters ) )
-                {
-                    $pos = array_search( $urlParamName, $parameters );
-
-                    $params[$variableParamName] = $parameters[$pos + 1];
-                }
-                /*else
-                {
-                    $params[$variableParamName] = false;
-                }*/
-            }
-        }
-        // Loop through user defines parameters
-        if ( $userParameters !== false )
-        {
-            if ( !isset( $params['UserParameters'] ) or
-                 !is_array( $params['UserParameters'] ) )
-            {
-                $params['UserParameters'] = array();
-            }
-
-            if ( is_array( $userParameters ) && count( $userParameters ) > 0 )
-            {
-                foreach ( array_keys( $userParameters ) as $paramKey )
-                {
-                    if( isset( $function['unordered_params'] ) &&
-                        $unorderedParams != null )
+                    if ( isset( $parameters[$i] ) )
                     {
-                        if ( array_key_exists( $paramKey, $unorderedParams ) )
-                        {
-                            $params[$unorderedParams[$paramKey]] = $userParameters[$paramKey];
-                            $unorderedParametersList[$unorderedParams[$paramKey]] = $userParameters[$paramKey];
-                        }
+                        $params[$param] = $parameters[$i];
                     }
-                    $params['UserParameters'][$paramKey] = $userParameters[$paramKey];
+                    ++$i;
+                }
+            }
+            if ( array_key_exists( 'Limitation', $parameters  ) )
+            {
+                $params['Limitation'] =& $parameters[ 'Limitation' ];
+            }
+            // check for unordered parameters and initialize variables if they exist
+            if ( isset( $function["unordered_params"] ) )
+            {
+                $unorderedParams = $function["unordered_params"];
+                foreach ( $unorderedParams as $urlParamName => $variableParamName )
+                {
+                    if ( in_array( $urlParamName, $parameters ) )
+                    {
+                        $pos = array_search( $urlParamName, $parameters );
+
+                        $params[$variableParamName] = $parameters[$pos + 1];
+                    }
+                }
+            }
+            // Loop through user defines parameters
+            if ( $userParameters !== false )
+            {
+                if ( !isset( $params['UserParameters'] ) or
+                     !is_array( $params['UserParameters'] ) )
+                {
+                    $params['UserParameters'] = array();
+                }
+
+                if ( is_array( $userParameters ) && count( $userParameters ) > 0 )
+                {
+                    foreach ( array_keys( $userParameters ) as $paramKey )
+                    {
+                        if( isset( $function['unordered_params'] ) &&
+                            $unorderedParams != null )
+                        {
+                            if ( array_key_exists( $paramKey, $unorderedParams ) )
+                            {
+                                $params[$unorderedParams[$paramKey]] = $userParameters[$paramKey];
+                                $unorderedParametersList[$unorderedParams[$paramKey]] = $userParameters[$paramKey];
+                            }
+                        }
+                        $params['UserParameters'][$paramKey] = $userParameters[$paramKey];
+                    }
                 }
             }
         }

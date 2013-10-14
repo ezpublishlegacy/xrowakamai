@@ -25,7 +25,10 @@ class ContentViewTest implements ContentModifiedEvaluator, ContentPermissionEval
         {
             if ( class_exists( 'eRASMoCookie' ) )
             {
-                $etag->permission = eRASMoCookie::generateCookieValue( $current_user );
+                if( $cookie = self::getCookie() )
+                    $etag->permission = $cookie;
+                else
+                    $etag->permission = eRASMoCookie::generateCookieValue( $current_user );
             }
             else
             {
