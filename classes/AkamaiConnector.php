@@ -197,7 +197,7 @@ class AkamaiConnector implements CDNConnector
                     return true;
                 }
                 $ttl = call_user_func( $rule . "::isNotModified", $moduleName, $functionName, $params, $time );
-                if( !in_array( self::PERMISSIONS, class_implements( $rule ) && $ttl ) )
+                if( $ttl )
                 {
                     header( "HTTP/1.1 304 Not Modified" );
                     CDNTools::cacheHeader( $ttl, $time, $ifNoneMatch );
