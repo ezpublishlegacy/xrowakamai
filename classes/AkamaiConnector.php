@@ -196,8 +196,13 @@ class AkamaiConnector implements CDNConnector
                     }
                     eZLog::write( "ETAG MATCH: " . $ifNoneMatch->generate() . " " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
                 }
+                if ( in_array( self::PERMISSIONS, class_implements( $rule ) ) && !$ifNoneMatch )
+                {
+                    eZLog::write( "ETAG REQUIRED:  " . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] , "xrowcdn.log");
+                    return true;
+                }
                 $ttl = call_user_func( $rule . "::isNotModified", $moduleName, $functionName, $params, $time );
-                if( $ttl )
+                if( !in_array( self::PERMISSIONS, class_implements( $rule ) && $ttl ) )
                 {
                     header( "HTTP/1.1 304 Not Modified" );
                     CDNTools::cacheHeader( $ttl, $time, $ifNoneMatch );
@@ -220,6 +225,8 @@ class AkamaiConnector implements CDNConnector
      */
     static function deliver( $html )
     {
+        //$uname = posix_uname();
+        //header( "X-Info: Server 84" . time() );
         $ini = eZINI::instance( 'xrowcdn.ini' );
         if ( $ini->hasVariable( 'Settings', 'Filter' ) and function_exists( $ini->variable( 'Settings', 'Filter' ) ) )
         {
