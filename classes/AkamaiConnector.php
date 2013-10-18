@@ -220,8 +220,12 @@ class AkamaiConnector implements CDNConnector
      */
     static function deliver( $html )
     {
-        //$uname = posix_uname();
-        //header( "X-Info: Server 84" . time() );
+        if ( function_exists( 'posix_uname' ) )
+        {
+            $uname = posix_uname();
+            header( "X-Info: " . $uname['nodename'] . " " . time() );
+        }
+
         $ini = eZINI::instance( 'xrowcdn.ini' );
         if ( $ini->hasVariable( 'Settings', 'Filter' ) and function_exists( $ini->variable( 'Settings', 'Filter' ) ) )
         {
