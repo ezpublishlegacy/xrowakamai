@@ -31,7 +31,7 @@ class CDNTools
             {
                 // Clients behind a HTTP 1.0 proxy have issues we deactivate client caching at the moment
                 // header( 'Cache-Control: private, must-revalidate, max-age=0' );
-                header( 'Cache-Control: no-cache, must-revalidate' );
+                header( 'Cache-Control: no-store, no-cache, must-revalidate' );
                 header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' );
             }
             else
