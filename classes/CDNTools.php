@@ -38,7 +38,7 @@ class CDNTools
             {
                 header( 'Cache-Control: public, must-revalidate, max-age=' . $ttl );
             }
-            header( 'Edge-control: !log-cookie,max-age=' . $ttl );
+            header( 'Edge-control: !log-cookie,dca=esi,max-age=' . $ttl );
             header( 'Age: 0' );
         }
         if ( $last_modified )
