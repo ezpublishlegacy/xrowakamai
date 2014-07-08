@@ -38,7 +38,22 @@ class CDNTools
             {
                 header( 'Cache-Control: public, must-revalidate, max-age=' . $ttl );
             }
-            header( 'Edge-control: !log-cookie,dca=esi,max-age=' . $ttl );
+            $edgeHeader = array();
+            $ini = eZINI::instance( 'xrowcdn.ini' );
+            if ( $ini->hasVariable ( "Settings", "EdgeControl" ) )
+            {
+                $headerArray = $ini->variable( "Settings", "EdgeControl");
+                if ( count( $headerArray ) > 0 )
+                {
+                    $edgeHeader = implode( ', ', $headerArray );
+                }
+            }
+            else
+            {
+            	$edgeHeader = array( "dca=esi", "!log-cookie" );
+            }
+            array_push( $edgeHeader, "max-age=" . $ttl );
+            header( 'Edge-control: '. implode( ', ', $edgeHeader ) );
             header( 'Age: 0' );
         }
         if ( $last_modified )

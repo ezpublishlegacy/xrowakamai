@@ -18,6 +18,11 @@
 #Modules[content/view]=XROW\CDN\ContentViewTest
 #Modules[xrowakamai/time]=3600
 
+# Define or customise Edge-Control header
+#EdgeControl[]=dca=esi
+#EdgeControl[]=!no-store
+#EdgeControl[]=!log-cookie
+
 Directories[]
 Directories[]=var
 Directories[]=extension
